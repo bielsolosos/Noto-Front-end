@@ -6,7 +6,11 @@ import { Button } from "@/components/ui/button";
 import { useNotes } from "@/contexts/NotesContext";
 import { Trash2 } from "lucide-react";
 
-export function PageList() {
+interface PageListProps {
+  onPageSelect?: () => void; // Callback para fechar drawer no mobile
+}
+
+export function PageList({ onPageSelect }: PageListProps) {
   const {
     pageSummaries,
     selectedPageId,
@@ -22,9 +26,11 @@ export function PageList() {
       if (confirm("Você tem alterações não salvas. Deseja continuar?")) {
         cancelEdit();
         setSelectedPageId(pageId);
+        onPageSelect?.(); // Fecha o drawer se estiver no mobile
       }
     } else {
       setSelectedPageId(pageId);
+      onPageSelect?.(); // Fecha o drawer se estiver no mobile
     }
   };
 
