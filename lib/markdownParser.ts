@@ -101,11 +101,11 @@ export function parseMarkdown(markdown: string): string {
   // Regular unordered lists (depois das task lists)
   html = html.replace(
     /^- (.*$)/gim,
-    "<li class='my-1 text-foreground'>$1</li>"
+    "<li class='my-1 text-foreground'>• $1</li>"
   );
   html = html.replace(
     /(<li.*<\/li>)/gim,
-    '<ul class="list-disc list-outside my-4 space-y-1 pl-6">$1</ul>'
+    '<ul class="my-4 space-y-1 pl-6">$1</ul>'
   );
 
   // Tables (básico)
