@@ -1,10 +1,9 @@
 "use client";
 
-import type React from "react";
-
 import { Button } from "@/components/ui/button";
 import { useNotes } from "@/contexts/NotesContext";
 import { Trash2 } from "lucide-react";
+import type React from "react";
 
 interface PageListProps {
   onPageSelect?: () => void; // Callback para fechar drawer no mobile
@@ -26,11 +25,11 @@ export function PageList({ onPageSelect }: PageListProps) {
       if (confirm("Você tem alterações não salvas. Deseja continuar?")) {
         cancelEdit();
         setSelectedPageId(pageId);
-        onPageSelect?.(); // Fecha o drawer se estiver no mobile
+        onPageSelect?.();
       }
     } else {
       setSelectedPageId(pageId);
-      onPageSelect?.(); // Fecha o drawer se estiver no mobile
+      onPageSelect?.();
     }
   };
 
@@ -46,14 +45,14 @@ export function PageList({ onPageSelect }: PageListProps) {
       {pageSummaries.map((page) => (
         <div
           key={page.id}
-          className={`group relative rounded-lg p-3 mb-2 cursor-pointer transition-colors hover:bg-accent ${
+          className={`group relative rounded-lg p-4 mb-2 cursor-pointer transition-colors hover:bg-accent ${
             selectedPageId === page.id ? "bg-accent border border-border" : ""
           }`}
           onClick={() => handlePageSelect(page.id)}
         >
-          <div className="flex items-start justify-between">
+          <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-sm truncate mb-1">
+              <h3 className="font-medium text-base truncate mb-1">
                 {page.title}
               </h3>
               <p className="text-xs text-muted-foreground">
@@ -70,10 +69,12 @@ export function PageList({ onPageSelect }: PageListProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="h-8 w-8 ml-2 md:h-6 md:w-6 
+                         md:opacity-0 md:group-hover:opacity-100 
+                         transition-opacity"
               onClick={(e) => handleDeletePage(e, page.id)}
             >
-              <Trash2 className="h-3 w-3" />
+              <Trash2 className="h-4 w-4 md:h-3 md:w-3" />
             </Button>
           </div>
         </div>
