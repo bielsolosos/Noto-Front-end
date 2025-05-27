@@ -2,6 +2,7 @@
 
 import { useTheme } from "@/contexts/ThemeContext";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { useMobile } from "@/hooks/useMobile";
 import { Toaster } from "react-hot-toast";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { Header } from "./Header";
@@ -10,6 +11,7 @@ import { Sidebar } from "./Sidebar";
 
 export function MainLayout() {
   const { darkMode } = useTheme();
+  const isMobile = useMobile();
   useKeyboardShortcuts();
 
   const toastStyle = {
@@ -27,7 +29,7 @@ export function MainLayout() {
         <Toaster toastOptions={{ style: toastStyle }} />
         <Header />
         <div className="flex h-[calc(100vh-4rem)]">
-          <Sidebar />
+          {!isMobile && <Sidebar />}
           <MainContent />
         </div>
       </div>
