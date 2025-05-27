@@ -2,10 +2,19 @@
 
 import { Input } from "@/components/ui/input";
 import { useNotes } from "@/contexts/NotesContext";
+import { useEffect, useRef } from "react";
 
 export function NoteEditor() {
   const { editTitle, editContent, handleTitleChange, handleContentChange } =
     useNotes();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-focus no textarea quando entra em modo de edição
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, []);
 
   return (
     <div className="transition-all duration-300 opacity-100 translate-y-0">

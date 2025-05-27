@@ -128,7 +128,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
       const response = await api.post<Page>("/pages", {
         title: `Entrada - ${today}`,
-        content: `# ${today}\n\n## Como me sinto hoje\n\n\n\n## O que aconteceu\n\n\n\n## Reflexões\n\n\n\n## Gratidão\n\n- `,
+        content: `# Bem vindo a sua nova página `,
       });
 
       const newPage = response.data;
@@ -173,6 +173,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     data: { title: string; content: string }
   ) => {
     try {
+      alert(data.title);
       const response = await api.put<Page>(`/pages/${pageId}`, data);
 
       // Atualizar página selecionada

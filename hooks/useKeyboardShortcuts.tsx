@@ -1,53 +1,71 @@
-"use client"
+"use client";
 
-import { useEffect } from "react"
-import { useEditor } from "./useEditor"
-import { useNotes } from "@/contexts/NotesContext"
+import { useNotes } from "@/contexts/NotesContext";
+import { useEffect } from "react";
 
 export function useKeyboardShortcuts() {
-  const { savePage, isEditing, cancelEdit, setIsEditing } = useEditor()
-  const { selectedPage, createNewPage } = useNotes()
+  const {
+    savePage,
+    isEditing,
+    cancelEdit,
+    startEditing,
+    selectedPage,
+    createNewPage,
+  } = useNotes();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Only handle shortcuts if not typing in an input
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        // Allow Ctrl+S and Escape even in inputs
-        if (e.ctrlKey || e.metaKey) {
-          if (e.key === "s") {
-            e.preventDefault()
-            if (isEditing) savePage()
-          }
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        if (isEditing) {
+          console.log("Ctrl+S pressed - saving...");
+          savePage();
         }
-        if (e.key === "Escape" && isEditing) {
-          cancelEdit()
-        }
-        return
+        return;
+      }
+
+      // Escape funciona EM QUALQUER LUGAR
+      if (e.key === "Escape" && isEditing) {
+        e.preventDefault();
+        console.log("Escape pressed - canceling...");
+        cancelEdit();
+        return;
+      }
+
+      // Outros atalhos só funcionam FORA de inputs
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) {
+        return;
       }
 
       if (e.ctrlKey || e.metaKey) {
         switch (e.key) {
-          case "s":
-            e.preventDefault()
-            if (isEditing) savePage()
-            break
           case "e":
-            e.preventDefault()
-            if (!isEditing && selectedPage) setIsEditing(true)
-            break
+            e.preventDefault();
+            if (!isEditing && selectedPage) {
+              console.log("Ctrl+E pressed - starting edit...");
+              startEditing();
+            }
+            break;
           case "n":
-            e.preventDefault()
-            createNewPage()
-            break
+            e.preventDefault();
+            console.log("Ctrl+N pressed - creating new page...");
+            createNewPage();
+            break;
         }
       }
+    };
 
-      if (e.key === "Escape" && isEditing) {
-        cancelEdit()
-      }
-    }
-
-    document.addEventListener("keydown", handleKeyDown)
-    return () => document.removeEventListener("keydown", handleKeyDown)
-  }, [savePage, isEditing, selectedPage, cancelEdit, setIsEditing, createNewPage])
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [
+    savePage,
+    isEditing,
+    selectedPage,
+    cancelEdit,
+    startEditing,
+    createNewPage,
+  ]);
 }
