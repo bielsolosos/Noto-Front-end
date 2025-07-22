@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { NotesProvider } from "@/contexts/NotesContext"
-import { ThemeProvider } from "@/contexts/ThemeContext"
-import { MainLayout } from "@/components/layout/MainLayout"
+import { MainLayout } from "@/components/layout/MainLayout";
+import { NotesProvider } from "@/contexts/NotesContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 export default function HomePage() {
   return (
@@ -11,5 +11,5 @@ export default function HomePage() {
         <MainLayout />
       </NotesProvider>
     </ThemeProvider>
-  )
+  );
 }
