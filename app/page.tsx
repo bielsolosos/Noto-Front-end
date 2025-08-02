@@ -53,7 +53,7 @@ function LoginContent() {
         }}
       >
         <h2 className="text-3xl font-bold mb-8 text-center">
-          APP SECRETO CARAIO
+          APP SECRETO SHHH
         </h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
