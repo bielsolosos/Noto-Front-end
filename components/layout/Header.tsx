@@ -3,15 +3,26 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useAuth } from "@/contexts/AuthContext";
 import { useNotes } from "@/contexts/NotesContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useMobile } from "@/hooks/useMobile";
-import { BookOpen, Edit3, Menu, Moon, Save, Sun, X } from "lucide-react";
+import {
+  BookOpen,
+  Edit3,
+  LogOut,
+  Menu,
+  Moon,
+  Save,
+  Sun,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 import { MobileSidebar } from "./MobileSidebar";
 
 export function Header() {
   const { darkMode, toggleDarkMode } = useTheme();
+  const { logout, user } = useAuth();
   const {
     selectedPage,
     isEditing,
@@ -68,6 +79,15 @@ export function Header() {
             )}
           </Button>
 
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={logout}
+            className="h-9 w-9 rounded-lg border border-border hover:bg-accent"
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
+
           {isEditing ? (
             <div className="flex items-center gap-1 md:gap-2">
               <Button
@@ -97,6 +117,7 @@ export function Header() {
               </Button>
             )
           )}
+          <div>{user?.username}</div>
         </div>
       </div>
     </header>

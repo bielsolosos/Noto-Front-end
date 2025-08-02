@@ -31,11 +31,11 @@ export function NoteEditor() {
           value={editContent}
           onChange={(e) => handleContentChange(e.target.value)}
           placeholder="Escreva seus pensamentos aqui..."
-          className="w-full min-h-[400px] md:min-h-[500px] p-4 border border-border rounded-lg bg-background text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
+          className="w-full min-h-[600px] md:min-h-[800px] p-6 border border-border rounded-lg bg-background text-foreground resize-none focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
           style={{
             fontFamily: "inherit",
-            fontSize: "16px",
-            lineHeight: "1.6",
+            fontSize: "18px",
+            lineHeight: "1.8",
           }}
         />
 

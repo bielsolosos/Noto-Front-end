@@ -25,10 +25,10 @@ export function MainLayout() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
+      <div className="bg-background text-foreground transition-colors duration-300">
         <Toaster toastOptions={{ style: toastStyle }} />
         <Header />
-        <div className="flex h-[calc(100vh-4rem)]">
+        <div className="flex ">
           {!isMobile && <Sidebar />}
           <MainContent />
         </div>
