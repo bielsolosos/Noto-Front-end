@@ -1,12 +1,19 @@
 "use client";
 
+import api from "@/lib/api";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 
+interface User {
+  id: string;
+  email: string;
+  username: string;
+}
 interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  user: User | null;
   accessToken: string | null;
 }
 
@@ -15,6 +22,7 @@ const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -23,6 +31,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (token && refresh) {
       setAccessToken(token);
       setRefreshToken(refresh);
+      fetchUser(token);
     }
   }, []);
 
@@ -33,6 +42,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [accessToken, refreshToken]);
 
+  const fetchUser = async (token: string) => {
+    try {
+      const response = await api.get("/users/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUser(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar dados do usuário:", error);
+      logout();
+    }
+  };
+
   const login = async (email: string, password: string) => {
     try {
       const response = await axios.post("/api/login", { email, password });
@@ -41,11 +62,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       setAccessToken(token);
       setRefreshToken(refreshToken);
-
-      router.push("/editor"); // redireciona após login
+      await fetchUser(token);
+      router.push("/editor");
     } catch (error) {
       console.error("Falha no login", error);
-      throw error; // deixa o erro subir para a UI tratar
+      throw error;
     }
   };
 
@@ -58,7 +79,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ login, logout, accessToken }}>
+    <AuthContext.Provider value={{ login, logout, accessToken, user }}>
       {children}
     </AuthContext.Provider>
   );

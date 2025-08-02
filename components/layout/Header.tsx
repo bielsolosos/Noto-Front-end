@@ -22,7 +22,7 @@ import { MobileSidebar } from "./MobileSidebar";
 
 export function Header() {
   const { darkMode, toggleDarkMode } = useTheme();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const {
     selectedPage,
     isEditing,
@@ -117,6 +117,7 @@ export function Header() {
               </Button>
             )
           )}
+          <div>{user?.username}</div>
         </div>
       </div>
     </header>

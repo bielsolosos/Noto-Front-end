@@ -25,11 +25,22 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401) {
+      // Se já tentou fazer refresh e ainda deu 401, desloga e redireciona
+      if (originalRequest._retry) {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        window.location.href = "/";
+        return Promise.reject(error);
+      }
+
       originalRequest._retry = true;
 
       const refreshToken = localStorage.getItem("refreshToken");
-      if (!refreshToken) return Promise.reject(error);
+      if (!refreshToken) {
+        window.location.href = "/";
+        return Promise.reject(error);
+      }
 
       try {
         const res = await axios.post(`${apiUrl}/auth/refresh`, {
@@ -44,7 +55,7 @@ api.interceptors.response.use(
       } catch (refreshError) {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
-        window.location.href = "/login";
+        window.location.href = "/";
         return Promise.reject(refreshError);
       }
     }
