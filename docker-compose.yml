@@ -1,0 +1,19 @@
+version: "3.8"
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: noto-frontend-prod
+    ports:
+      - "127.0.0.1:3001:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://noto-backend-prod:8080
+      - NODE_ENV=production
+    restart: always
+    networks:
+      - noto-network-prod
+
+networks:
+  noto-network-prod:
+    external: true
