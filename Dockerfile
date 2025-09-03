@@ -1,25 +1,21 @@
 FROM node:20-alpine AS base
 
-# Instalar pnpm
-RUN npm install -g pnpm
-
-# Configurar workdir
 WORKDIR /app
 
 # Copiar arquivos de dependência
-COPY package*.json pnpm-lock.yaml ./
+COPY package.json yarn.lock ./
 
 # Instalar dependências
-RUN pnpm install --frozen-lockfile
+RUN yarn install --frozen-lockfile
 
 # Copiar arquivos do projeto
 COPY . .
 
 # Build do projeto
-RUN pnpm run build
+RUN yarn build
 
 # Expor porta
 EXPOSE 3000
 
-# Comando para produção (usando start)
-CMD ["pnpm", "start"]
+# Comando para produção
+CMD ["yarn", "start"]
