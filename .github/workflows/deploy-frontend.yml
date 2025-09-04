@@ -1,13 +1,8 @@
-name: Deploy    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Deploy Frontend to VPS
-      uses: appleboy/ssh-action@v1.0.3
-      with:end to VPS
+name: Deploy Frontend
 
 on:
   push:
-    branches: [main, master, developer]
+    branches: [main, master]
   workflow_dispatch:
 
 jobs:
@@ -19,14 +14,14 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy Frontend to VPS
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.VPS_HOST }}
-        username: ${{ secrets.VPS_USERNAME }}
-        password: ${{ secrets.VPS_PASSWORD }}
-        port: ${{ secrets.VPS_PORT || 22 }}
-        command_timeout: 20m
-        script: |
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          command_timeout: 20m
+          script: |
             echo "🎨 Starting Frontend deployment..."
 
             # Navegar para o diretório do frontend
@@ -43,13 +38,15 @@ jobs:
             echo "📝 Recent commits:"
             git log --oneline -3
 
-          # Instalar dependências
-          echo "📦 Installing dependencies..."
-          yarn install --frozen-lockfile
-          
-          # Build do projeto
-          echo "🔨 Building project..."
-          yarn build            # Limpeza e gestão do processo PM2
+            # Instalar dependências
+            echo "📦 Installing dependencies..."
+            yarn install --frozen-lockfile
+
+            # Build do projeto
+            echo "🔨 Building project..."
+            yarn build
+
+            # Limpeza e gestão do processo PM2
             echo "🧹 Cleaning up PM2 processes..."
 
             # Parar e deletar processo existente se houver
@@ -63,9 +60,11 @@ jobs:
             # Aguardar um momento para garantir limpeza
             sleep 2
 
-          # Iniciar novo processo
-          echo "🆕 Starting fresh frontend process..."
-          pm2 start yarn --name "noto-frontend" -- start            # Salvar configuração
+            # Iniciar novo processo
+            echo "🆕 Starting fresh frontend process..."
+            pm2 start yarn --name "noto-frontend" -- start
+
+            # Salvar configuração
             pm2 save
 
             # Mostrar status
