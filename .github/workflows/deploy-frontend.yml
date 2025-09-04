@@ -1,0 +1,81 @@
+name: Deploy Frontend to VPS
+
+on:
+  push:
+    branches: [main, master, developer]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy Frontend to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            echo "🎨 Starting Frontend deployment..."
+
+            # Navegar para o diretório do frontend
+            cd ${{ secrets.PROJECT_PATH }}/Noto-Front-end || { echo "❌ Frontend directory not found"; exit 1; }
+
+            # Mostrar branch atual
+            echo "📍 Current branch: $(git branch --show-current)"
+
+            # Pull das mudanças
+            echo "📥 Pulling latest changes..."
+            git pull origin $(git branch --show-current)
+
+            # Mostrar últimos commits
+            echo "📝 Recent commits:"
+            git log --oneline -3
+
+            # Instalar dependências
+            echo "📦 Installing dependencies..."
+            npm install
+
+            # Build do projeto
+            echo "🔨 Building project..."
+            npm run build
+
+            # Limpeza e gestão do processo PM2
+            echo "🧹 Cleaning up PM2 processes..."
+
+            # Parar e deletar processo existente se houver
+            if pm2 describe noto-frontend > /dev/null 2>&1; then
+              echo "🛑 Stopping existing frontend process..."
+              pm2 stop noto-frontend
+              pm2 delete noto-frontend
+              echo "🗑️ Old process removed"
+            fi
+
+            # Aguardar um momento para garantir limpeza
+            sleep 2
+
+            # Iniciar novo processo
+            echo "🆕 Starting fresh frontend process..."
+            pm2 start npm --name "noto-frontend" -- start
+
+            # Salvar configuração
+            pm2 save
+
+            # Mostrar status
+            echo "📊 PM2 Status:"
+            pm2 status noto-frontend
+
+            # Verificar se está rodando
+            sleep 5
+            if pm2 describe noto-frontend | grep -q "online"; then
+              echo "✅ Frontend deployed successfully and is running!"
+            else
+              echo "❌ Frontend deployment failed!"
+              pm2 logs noto-frontend --lines 10
+              exit 1
+            fi
