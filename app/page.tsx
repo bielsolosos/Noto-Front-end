@@ -52,9 +52,7 @@ function LoginContent() {
           boxShadow: `0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)`,
         }}
       >
-        <h2 className="text-3xl font-bold mb-8 text-center">
-          APP SECRETO SHHH
-        </h2>
+        <h2 className="text-3xl font-bold mb-8 text-center">NOTO</h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
