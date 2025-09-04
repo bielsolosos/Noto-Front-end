@@ -1,4 +1,9 @@
-name: Deploy Frontend to VPS
+name: Deploy    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy Frontend to VPS
+      uses: appleboy/ssh-action@v1.0.3
+      with:end to VPS
 
 on:
   push:
