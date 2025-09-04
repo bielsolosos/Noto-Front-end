@@ -1,23 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { UserForm } from "@/components/admin/UserForm";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,11 +12,28 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { UserPlus, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import api from "@/lib/api";
+import { Trash2, UserPlus, Shield, ShieldOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import api from "@/lib/api";
-import { UserForm } from "@/components/admin/UserForm";
 
 interface User {
   id: string;
@@ -70,6 +70,20 @@ export function UserManagement() {
       fetchUsers();
     } catch (error: any) {
       toast.error("Erro ao deletar usuário");
+    }
+  };
+
+  const handleToggleAdmin = async (userId: string, currentRole: boolean) => {
+    try {
+      await api.put(`/users/${userId}/role`, {
+        role_admin: !currentRole,
+      });
+      toast.success(
+        `Usuário ${!currentRole ? "promovido a" : "removido de"} administrador`
+      );
+      fetchUsers();
+    } catch (error: any) {
+      toast.error("Erro ao alterar permissões do usuário");
     }
   };
 
@@ -137,6 +151,19 @@ export function UserManagement() {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
+                    {/* Toggle Admin */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleToggleAdmin(user.id, user.role_admin)}
+                    >
+                      {user.role_admin ? (
+                        <ShieldOff className="h-3 w-3" />
+                      ) : (
+                        <Shield className="h-3 w-3" />
+                      )}
+                    </Button>
+
                     {/* Delete User */}
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
@@ -146,7 +173,9 @@ export function UserManagement() {
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                          <AlertDialogTitle>
+                            Confirmar Exclusão
+                          </AlertDialogTitle>
                           <AlertDialogDescription>
                             Tem certeza que deseja deletar o usuário{" "}
                             <strong>{user.username}</strong>? Esta ação não pode
