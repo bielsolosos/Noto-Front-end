@@ -41,18 +41,25 @@ export function PageList({ onPageSelect }: PageListProps) {
   };
 
   return (
-    <>
+    <div className="space-y-2">
       {pageSummaries.map((page) => (
         <div
           key={page.id}
-          className={`group relative rounded-lg p-4 mb-2 cursor-pointer transition-colors hover:bg-accent ${
-            selectedPageId === page.id ? "bg-accent border border-border" : ""
+          className={`group relative rounded-lg p-3 cursor-pointer transition-all duration-200 hover:bg-accent/80 ${
+            selectedPageId === page.id
+              ? "bg-accent border border-primary/20 shadow-sm"
+              : "hover:shadow-sm"
           }`}
           onClick={() => handlePageSelect(page.id)}
         >
-          <div className="flex items-center justify-between">
-            <div className="flex-1 min-w-0">
-              <h3 className="font-medium text-base truncate mb-1">
+          {/* Container principal com flexbox */}
+          <div className="flex items-start gap-3">
+            {/* Conteúdo da nota - ocupa o espaço disponível */}
+            <div className="flex-1 min-w-0 overflow-hidden">
+              <h3
+                className="font-medium text-sm leading-tight mb-2 line-clamp-2"
+                title={page.title}
+              >
                 {page.title}
               </h3>
               <p className="text-xs text-muted-foreground">
@@ -62,23 +69,25 @@ export function PageList({ onPageSelect }: PageListProps) {
                   year: "numeric",
                   hour: "2-digit",
                   minute: "2-digit",
-                  second: "2-digit",
                 })}
               </p>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 ml-2 md:h-6 md:w-6 
-                         md:opacity-0 md:group-hover:opacity-100 
-                         transition-opacity"
-              onClick={(e) => handleDeletePage(e, page.id)}
-            >
-              <Trash2 className="h-4 w-4 md:h-3 md:w-3" />
-            </Button>
+
+            {/* Botão de deletar - sempre visível e fixo */}
+            <div className="flex-shrink-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 opacity-60 hover:opacity-100 hover:bg-destructive/10 hover:text-destructive transition-all"
+                onClick={(e) => handleDeletePage(e, page.id)}
+                title="Excluir entrada"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </div>
         </div>
       ))}
-    </>
+    </div>
   );
 }

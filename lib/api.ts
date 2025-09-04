@@ -25,9 +25,15 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401) {
-      // Se já tentou fazer refresh e ainda deu 401, desloga e redireciona
+    // Trata tanto 401 (Unauthorized) quanto 403 (Forbidden) como token expirado
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      console.log(
+        `Token expirado (${error.response.status}), tentando refresh...`
+      );
+
+      // Se já tentou fazer refresh e ainda deu erro, desloga e redireciona
       if (originalRequest._retry) {
+        console.log("Refresh token também expirado, fazendo logout...");
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
         window.location.href = "/";
@@ -38,21 +44,25 @@ api.interceptors.response.use(
 
       const refreshToken = localStorage.getItem("refreshToken");
       if (!refreshToken) {
+        console.log("Nenhum refresh token encontrado, redirecionando...");
         window.location.href = "/";
         return Promise.reject(error);
       }
 
       try {
+        console.log("Fazendo requisição de refresh token...");
         const res = await axios.post(`${apiUrl}/auth/refresh`, {
           refreshToken,
         });
 
+        console.log("Refresh token bem sucedido:", res.data);
         const newAccessToken = res.data.accessToken;
         localStorage.setItem("accessToken", newAccessToken);
 
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return api(originalRequest);
       } catch (refreshError) {
+        console.error("Erro no refresh token:", refreshError);
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
         window.location.href = "/";

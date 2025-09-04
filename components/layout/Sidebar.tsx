@@ -11,13 +11,13 @@ export function Sidebar() {
   const { createNewPage, isLoadingList, isCreating } = useNotes();
 
   return (
-    <aside className="w-80 border-r border-border bg-muted/30">
-      <div className="p-6 border-b border-border flex items-center justify-between">
-        <h2 className="font-semibold">Entradas</h2>
+    <aside className="fixed left-0 top-16 z-40 w-80 h-[calc(100vh-4rem)] border-r border-border bg-background">
+      <div className="p-4 border-b border-border flex items-center justify-between">
+        <h2 className="font-semibold text-lg">Entradas</h2>
         <Button
           onClick={createNewPage}
           size="sm"
-          className="ml-2 px-2 py-1"
+          className="ml-2 px-3 py-2"
           disabled={isCreating}
         >
           <Plus className="mr-1 h-4 w-4" />
@@ -25,8 +25,8 @@ export function Sidebar() {
         </Button>
       </div>
 
-      <ScrollArea className="h-[calc(100vh-8rem)]">
-        <div className="p-2">
+      <ScrollArea className="h-[calc(100vh-9rem)] overflow-y-auto">
+        <div className="p-3">
           {isLoadingList ? <PageListSkeleton /> : <PageList />}
         </div>
       </ScrollArea>
