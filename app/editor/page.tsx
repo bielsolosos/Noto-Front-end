@@ -2,11 +2,20 @@
 
 import { MainLayout } from "@/components/layout/MainLayout";
 import { NotesProvider } from "@/contexts/NotesContext";
+import { Suspense } from "react";
 
-export default function HomePage() {
+function EditorContent() {
   return (
     <NotesProvider>
       <MainLayout />
     </NotesProvider>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={<div>Carregando...</div>}>
+      <EditorContent />
+    </Suspense>
   );
 }
