@@ -125,8 +125,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.message || "Erro ao carregar páginas";
-      toast.error("Um erro inesperado aconteceu");
-      console.error("Error fetching page list:", error);
+      toast.error("Erro ao carregar páginas");
     } finally {
       setIsLoadingList(false);
     }
@@ -142,8 +141,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       } catch (error: any) {
         const errorMessage =
           error.response?.data?.message || "Erro ao carregar página";
-        toast.error("Um erro inesperado aconteceu");
-        console.error("Error fetching page:", error);
+        toast.error("Erro ao carregar página");
         // Se der erro, limpar seleção
         setSelectedPage(null);
         setSelectedPageId(null);
@@ -184,8 +182,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.message || "Erro ao criar página";
-      toast.error("Um erro inesperado aconteceu");
-      console.error("Error creating page:", error);
+      toast.error("Erro ao criar página");
     } finally {
       setIsCreating(false);
     }
@@ -207,8 +204,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
       toast.success("Página deletada com sucesso");
     } catch (error) {
-      toast.error("Um erro inesperado aconteceu");
-      console.error("Error deleting page:", error);
+      toast.error("Erro ao deletar página");
     }
   };
 
@@ -239,20 +235,17 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
       toast.success("Página atualizada com sucesso");
     } catch (error) {
-      toast.error("Um erro inesperado aconteceu");
-      console.error("Error updating page:", error);
+      toast.error("Erro ao atualizar página");
       throw error;
     }
   };
 
   // Editor actions
   const startEditing = () => {
-    console.log("Starting edit mode from context");
     setIsEditing(true);
   };
 
   const cancelEdit = () => {
-    console.log("Canceling edit from context");
     if (selectedPage) {
       setEditTitle(selectedPage.title);
       setEditContent(selectedPage.content);
@@ -263,14 +256,9 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
   const savePage = async () => {
     if (!selectedPage || !hasUnsavedChanges) {
-      console.log("Save skipped:", {
-        selectedPage: !!selectedPage,
-        hasUnsavedChanges,
-      });
       return;
     }
 
-    console.log("Saving page from context...");
     try {
       await updatePageApi(selectedPage.id, {
         title: editTitle,
@@ -278,9 +266,8 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       });
       setHasUnsavedChanges(false);
       setIsEditing(false);
-      console.log("Page saved successfully");
     } catch (error) {
-      console.error("Error saving page:", error);
+      // Error já tratado no updatePageApi
     }
   };
 

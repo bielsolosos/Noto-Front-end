@@ -28,7 +28,7 @@ export function MainLayout() {
       <div className="bg-background text-foreground transition-colors duration-300 min-h-screen">
         <Toaster toastOptions={{ style: toastStyle }} />
         <Header />
-        <div className="flex">
+        <div className="flex pt-16">
           {!isMobile && <Sidebar />}
           <div className={`flex-1 ${!isMobile ? "ml-80" : ""}`}>
             <MainContent />
