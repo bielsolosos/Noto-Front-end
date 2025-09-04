@@ -25,12 +25,14 @@ export function MainLayout() {
 
   return (
     <ErrorBoundary>
-      <div className="bg-background text-foreground transition-colors duration-300">
+      <div className="bg-background text-foreground transition-colors duration-300 min-h-screen">
         <Toaster toastOptions={{ style: toastStyle }} />
         <Header />
-        <div className="flex ">
+        <div className="flex pt-16">
           {!isMobile && <Sidebar />}
-          <MainContent />
+          <div className={`flex-1 ${!isMobile ? "ml-80" : ""}`}>
+            <MainContent />
+          </div>
         </div>
       </div>
     </ErrorBoundary>

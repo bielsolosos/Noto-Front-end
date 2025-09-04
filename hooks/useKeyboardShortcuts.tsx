@@ -2,68 +2,66 @@
 
 import { useNotes } from "@/contexts/NotesContext";
 import { useEffect } from "react";
+import toast from "react-hot-toast";
 
 export function useKeyboardShortcuts() {
   const {
-    savePage,
     isEditing,
+    hasUnsavedChanges,
+    savePage,
     cancelEdit,
     startEditing,
-    selectedPage,
     createNewPage,
   } = useNotes();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+      // Ctrl+S: Salvar
+      if (e.ctrlKey && e.key === "s") {
         e.preventDefault();
-        if (isEditing) {
-          console.log("Ctrl+S pressed - saving...");
+        if (isEditing && hasUnsavedChanges) {
           savePage();
+          toast.success("Salvando...");
         }
-        return;
       }
 
-      // Escape funciona EM QUALQUER LUGAR
-      if (e.key === "Escape" && isEditing) {
-        e.preventDefault();
-        console.log("Escape pressed - canceling...");
-        cancelEdit();
-        return;
-      }
-
-      // Outros atalhos só funcionam FORA de inputs
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement
-      ) {
-        return;
-      }
-
-      if (e.ctrlKey || e.metaKey) {
-        switch (e.key) {
-          case "e":
-            e.preventDefault();
-            if (!isEditing && selectedPage) {
-              console.log("Ctrl+E pressed - starting edit...");
-              startEditing();
+      // Escape: Cancelar edição
+      if (e.key === "Escape") {
+        if (isEditing) {
+          if (hasUnsavedChanges) {
+            if (confirm("Você tem alterações não salvas. Deseja descartar?")) {
+              cancelEdit();
+              toast("Edição cancelada", { icon: "ℹ️" });
             }
-            break;
-          case "n":
-            e.preventDefault();
-            console.log("Ctrl+N pressed - creating new page...");
-            createNewPage();
-            break;
+          } else {
+            cancelEdit();
+            toast("Edição cancelada", { icon: "ℹ️" });
+          }
         }
+      }
+
+      // Ctrl+E: Editar
+      if (e.ctrlKey && e.key === "e") {
+        e.preventDefault();
+        if (!isEditing) {
+          startEditing();
+          toast("Modo de edição ativado", { icon: "✏️" });
+        }
+      }
+
+      // Ctrl+N: Nova página
+      if (e.ctrlKey && e.key === "n") {
+        e.preventDefault();
+        createNewPage();
       }
     };
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [
-    savePage,
     isEditing,
-    selectedPage,
+    hasUnsavedChanges,
+    savePage,
     cancelEdit,
     startEditing,
     createNewPage,

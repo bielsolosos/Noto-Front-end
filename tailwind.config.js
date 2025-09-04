@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+const plugin = require("tailwindcss/plugin");
+
 module.exports = {
   darkMode: ["class"],
   content: [
@@ -31,6 +33,10 @@ module.exports = {
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
+        },
+        tertiary: {
+          DEFAULT: "hsl(var(--tertiary))",
+          foreground: "hsl(var(--tertiary-foreground))",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
@@ -74,5 +80,15 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
-}
+  plugins: [
+    require("tailwindcss-animate"),
+    plugin(function ({ addBase, theme }) {
+      addBase({
+        body: {
+          backgroundColor: theme("colors.background"),
+          color: theme("colors.foreground"),
+        },
+      });
+    }),
+  ],
+};

@@ -9,6 +9,7 @@ interface User {
   id: string;
   email: string;
   username: string;
+  role_admin: boolean;
 }
 interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
@@ -48,9 +49,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUser(response.data);
-    } catch (error) {
-      console.error("Erro ao buscar dados do usuário:", error);
-      logout();
+    } catch (error: any) {
+      console.error("Erro ao buscar usuário:", error);
+      // Só faz logout se for erro de autenticação
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        logout();
+      }
     }
   };
 
@@ -65,7 +69,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await fetchUser(token);
       router.push("/editor");
     } catch (error) {
-      console.error("Falha no login", error);
       throw error;
     }
   };

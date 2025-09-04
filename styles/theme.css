@@ -1,0 +1,15 @@
+:root {
+  --primary: hsl(346, 90%, 50%); /* Rosa */
+  --secondary: hsl(346, 70%, 80%); /* Rosa claro */
+  --tertiary: hsl(43, 74%, 66%); /* Amarelo */
+  --background: #f3f4f6; /* Cinza claro */
+  --foreground: #111827; /* Preto */
+}
+
+[data-theme="dark"] {
+  --primary: hsl(346, 84%, 61%); /* Rosa escuro */
+  --secondary: hsl(346, 40%, 30%); /* Rosa mais escuro */
+  --tertiary: hsl(43, 74%, 66%); /* Amarelo */
+  --background: #1f2937; /* Cinza escuro */
+  --foreground: #f9fafb; /* Branco */
+}

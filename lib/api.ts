@@ -1,4 +1,5 @@
 import axios from "axios";
+import toast from "react-hot-toast";
 
 // Usa variável de ambiente com fallback local
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
@@ -25,11 +26,13 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401) {
-      // Se já tentou fazer refresh e ainda deu 401, desloga e redireciona
+    // Trata tanto 401 (Unauthorized) quanto 403 (Forbidden) como token expirado
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      // Se já tentou fazer refresh e ainda deu erro, desloga e redireciona
       if (originalRequest._retry) {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
+        toast.error("Sessão expirada. Faça login novamente.");
         window.location.href = "/";
         return Promise.reject(error);
       }
@@ -38,6 +41,7 @@ api.interceptors.response.use(
 
       const refreshToken = localStorage.getItem("refreshToken");
       if (!refreshToken) {
+        toast.error("Sessão expirada. Faça login novamente.");
         window.location.href = "/";
         return Promise.reject(error);
       }
@@ -55,6 +59,7 @@ api.interceptors.response.use(
       } catch (refreshError) {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
+        toast.error("Não foi possível renovar a sessão. Faça login novamente.");
         window.location.href = "/";
         return Promise.reject(refreshError);
       }

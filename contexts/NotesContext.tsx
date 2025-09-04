@@ -2,6 +2,7 @@
 
 import api from "@/lib/api";
 import type { Page, PageSummaryDto } from "@/types/page";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   createContext,
   useContext,
@@ -53,11 +54,34 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   const [isLoadingPage, setIsLoadingPage] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   // Editor state
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  // Função para atualizar a URL com o pageId
+  const updateUrlWithPageId = (pageId: string | null) => {
+    const currentUrl = new URL(window.location.href);
+
+    if (pageId) {
+      currentUrl.searchParams.set("pageId", pageId);
+    } else {
+      currentUrl.searchParams.delete("pageId");
+    }
+
+    // Usar replace para não adicionar ao histórico
+    router.replace(currentUrl.pathname + currentUrl.search);
+  };
+
+  // Função personalizada para setSelectedPageId que também atualiza a URL
+  const setSelectedPageIdWithUrl = (pageId: string | null) => {
+    setSelectedPageId(pageId);
+    updateUrlWithPageId(pageId);
+  };
 
   useEffect(() => {
     if (selectedPage) {
@@ -75,15 +99,33 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       const response = await api.get<PageSummaryDto[]>("/pages");
       setPageSummaries(response.data);
 
-      // Se não há página selecionada e temos páginas, selecionar a primeira
-      if (!selectedPageId && response.data.length > 0) {
-        setSelectedPageId(response.data[0].id);
+      // Verificar se há pageId na URL
+      const pageIdFromUrl = searchParams.get("pageId");
+
+      if (
+        pageIdFromUrl &&
+        response.data.some((page) => page.id === pageIdFromUrl)
+      ) {
+        // Se há um pageId válido na URL, usar ele (mas não atualizar a URL novamente)
+        if (selectedPageId !== pageIdFromUrl) {
+          setSelectedPageId(pageIdFromUrl);
+        }
+      } else if (!selectedPageId && response.data.length > 0) {
+        // Se não há página selecionada e não há pageId na URL, selecionar a primeira
+        setSelectedPageIdWithUrl(response.data[0].id);
+      } else if (
+        pageIdFromUrl &&
+        !response.data.some((page) => page.id === pageIdFromUrl)
+      ) {
+        // Se o pageId da URL não existe mais, limpar a URL e selecionar a primeira página
+        setSelectedPageIdWithUrl(
+          response.data.length > 0 ? response.data[0].id : null
+        );
       }
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.message || "Erro ao carregar páginas";
-      toast.error("Um erro inesperado aconteceu");
-      console.error("Error fetching page list:", error);
+      toast.error("Erro ao carregar páginas");
     } finally {
       setIsLoadingList(false);
     }
@@ -99,8 +141,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       } catch (error: any) {
         const errorMessage =
           error.response?.data?.message || "Erro ao carregar página";
-        toast.error("Um erro inesperado aconteceu");
-        console.error("Error fetching page:", error);
+        toast.error("Erro ao carregar página");
         // Se der erro, limpar seleção
         setSelectedPage(null);
         setSelectedPageId(null);
@@ -135,14 +176,13 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
       // Atualizar lista e selecionar nova página
       await refreshPageList();
-      setSelectedPageId(newPage.id);
+      setSelectedPageIdWithUrl(newPage.id);
 
       toast.success("Página criada com sucesso");
     } catch (error: any) {
       const errorMessage =
         error.response?.data?.message || "Erro ao criar página";
-      toast.error("Um erro inesperado aconteceu");
-      console.error("Error creating page:", error);
+      toast.error("Erro ao criar página");
     } finally {
       setIsCreating(false);
     }
@@ -156,6 +196,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       if (selectedPageId === pageId) {
         setSelectedPageId(null);
         setSelectedPage(null);
+        updateUrlWithPageId(null);
       }
 
       // Atualizar lista
@@ -163,8 +204,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
       toast.success("Página deletada com sucesso");
     } catch (error) {
-      toast.error("Um erro inesperado aconteceu");
-      console.error("Error deleting page:", error);
+      toast.error("Erro ao deletar página");
     }
   };
 
@@ -195,20 +235,17 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
       toast.success("Página atualizada com sucesso");
     } catch (error) {
-      toast.error("Um erro inesperado aconteceu");
-      console.error("Error updating page:", error);
+      toast.error("Erro ao atualizar página");
       throw error;
     }
   };
 
   // Editor actions
   const startEditing = () => {
-    console.log("Starting edit mode from context");
     setIsEditing(true);
   };
 
   const cancelEdit = () => {
-    console.log("Canceling edit from context");
     if (selectedPage) {
       setEditTitle(selectedPage.title);
       setEditContent(selectedPage.content);
@@ -219,14 +256,9 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
   const savePage = async () => {
     if (!selectedPage || !hasUnsavedChanges) {
-      console.log("Save skipped:", {
-        selectedPage: !!selectedPage,
-        hasUnsavedChanges,
-      });
       return;
     }
 
-    console.log("Saving page from context...");
     try {
       await updatePageApi(selectedPage.id, {
         title: editTitle,
@@ -234,9 +266,8 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       });
       setHasUnsavedChanges(false);
       setIsEditing(false);
-      console.log("Page saved successfully");
     } catch (error) {
-      console.error("Error saving page:", error);
+      // Error já tratado no updatePageApi
     }
   };
 
@@ -255,6 +286,14 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     refreshPageList();
   }, []);
 
+  // Sincronizar selectedPageId com a URL quando selectedPageId muda
+  useEffect(() => {
+    const pageIdFromUrl = searchParams.get("pageId");
+    if (selectedPageId && selectedPageId !== pageIdFromUrl) {
+      updateUrlWithPageId(selectedPageId);
+    }
+  }, [selectedPageId]);
+
   return (
     <NotesContext.Provider
       value={{
@@ -268,7 +307,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
         editTitle,
         editContent,
         hasUnsavedChanges,
-        setSelectedPageId,
+        setSelectedPageId: setSelectedPageIdWithUrl,
         createNewPage,
         deletePage,
         updatePage: updatePageApi,
