@@ -9,13 +9,13 @@ Configure os seguintes secrets no GitHub:
 1. Vá para `Settings` > `Secrets and variables` > `Actions`
 2. Adicione os secrets:
 
-| Secret | Valor | Descrição |
-|--------|-------|-----------|
-| `VPS_HOST` | IP da sua VPS | Ex: `123.456.789.10` |
-| `VPS_USERNAME` | Usuário SSH | Ex: `root` ou `fedora` |
-| `VPS_PASSWORD` | Senha SSH | Sua senha de acesso |
-| `VPS_PORT` | Porta SSH | `22` (padrão) |
-| `PROJECT_PATH` | Caminho base | Ex: `/home/usuario` |
+| Secret         | Valor         | Descrição              |
+| -------------- | ------------- | ---------------------- |
+| `VPS_HOST`     | IP da sua VPS | Ex: `123.456.789.10`   |
+| `VPS_USERNAME` | Usuário SSH   | Ex: `root` ou `fedora` |
+| `VPS_PASSWORD` | Senha SSH     | Sua senha de acesso    |
+| `VPS_PORT`     | Porta SSH     | `22` (padrão)          |
+| `PROJECT_PATH` | Caminho base  | Ex: `/home/usuario`    |
 
 ## 🔄 Como funciona
 
