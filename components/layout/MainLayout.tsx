@@ -15,10 +15,10 @@ export function MainLayout() {
   useKeyboardShortcuts();
 
   const toastStyle = {
-    background: !darkMode ? "#333" : "#fff",
-    color: !darkMode ? "#eee" : "#111",
+    background: darkMode ? "#333" : "#fff",
+    color: darkMode ? "#eee" : "#111",
     borderRadius: "8px",
-    boxShadow: !darkMode
+    boxShadow: darkMode
       ? "0 4px 12px rgba(0,0,0,0.6)"
       : "0 4px 12px rgba(0,0,0,0.1)",
   };
