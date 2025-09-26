@@ -1,143 +1,136 @@
 export function parseMarkdown(markdown: string): string {
   let html = markdown;
 
-  // Headers (ordem importa - do maior para o menor)
-  html = html.replace(
-    /^###### (.*$)/gim,
-    "<h6 class='text-base font-medium mt-4 mb-2 text-foreground'>$1</h6>"
-  );
-  html = html.replace(
-    /^##### (.*$)/gim,
-    "<h5 class='text-lg font-medium mt-4 mb-2 text-foreground'>$1</h5>"
-  );
-  html = html.replace(
-    /^#### (.*$)/gim,
-    "<h4 class='text-xl font-semibold mt-5 mb-3 text-foreground'>$1</h4>"
-  );
-  html = html.replace(
-    /^### (.*$)/gim,
-    "<h3 class='text-2xl font-semibold mt-6 mb-3 text-foreground'>$1</h3>"
-  );
-  html = html.replace(
-    /^## (.*$)/gim,
-    "<h2 class='text-3xl font-bold mt-8 mb-4 text-foreground'>$1</h2>"
-  );
-  html = html.replace(
-    /^# (.*$)/gim,
-    "<h1 class='text-4xl font-bold mt-8 mb-5 text-foreground border-b border-border pb-2'>$1</h1>"
-  );
+  // Headers - usando classes customizadas
+  html = html.replace(/^######\s+(.*$)/gim, "<h6 class='markdown-h6'>$1</h6>");
+  html = html.replace(/^#####\s+(.*$)/gim, "<h5 class='markdown-h5'>$1</h5>");
+  html = html.replace(/^####\s+(.*$)/gim, "<h4 class='markdown-h4'>$1</h4>");
+  html = html.replace(/^###\s+(.*$)/gim, "<h3 class='markdown-h3'>$1</h3>");
+  html = html.replace(/^##\s+(.*$)/gim, "<h2 class='markdown-h2'>$1</h2>");
+  html = html.replace(/^#\s+(.*$)/gim, "<h1 class='markdown-h1'>$1</h1>");
 
-  // Bold e Italic (ordem importa)
+  // Bold e Italic - usando classes customizadas
   html = html.replace(
     /\*\*\*(.*?)\*\*\*/gim,
-    "<strong class='font-bold text-primary'><em class='italic'>$1</em></strong>"
+    "<strong class='markdown-strong'><em class='markdown-em'>$1</em></strong>"
   );
   html = html.replace(
     /\*\*(.*?)\*\*/gim,
-    "<strong class='font-bold text-primary'>$1</strong>"
+    "<strong class='markdown-strong'>$1</strong>"
   );
-  html = html.replace(
-    /\*(.*?)\*/gim,
-    "<em class='italic text-muted-foreground'>$1</em>"
-  );
+  html = html.replace(/\*(.*?)\*/gim, "<em class='markdown-em'>$1</em>");
 
-  // Code blocks (antes do inline code)
+  // Code blocks - usando classes customizadas
   html = html.replace(
     /```(\w+)?\n([\s\S]*?)```/gim,
-    '<pre class="bg-muted/50 border border-border p-4 rounded-lg overflow-x-auto my-6 font-mono text-sm"><code class="text-foreground">$2</code></pre>'
+    '<pre class="markdown-code-block"><code>$2</code></pre>'
   );
   html = html.replace(
     /```\n([\s\S]*?)```/gim,
-    '<pre class="bg-muted/50 border border-border p-4 rounded-lg overflow-x-auto my-6 font-mono text-sm"><code class="text-foreground">$1</code></pre>'
+    '<pre class="markdown-code-block"><code>$1</code></pre>'
   );
 
   // Inline code
   html = html.replace(
     /`([^`]+)`/gim,
-    '<code class="bg-muted/70 border border-border px-2 py-1 rounded font-mono text-sm text-primary">$1</code>'
+    '<code class="markdown-code-inline">$1</code>'
+  );
+
+  // Images (ANTES dos links para não conflitar)
+  html = html.replace(
+    /!\[([^\]]*)\]\(([^)]+)\)/gim,
+    '<img src="$2" alt="$1" class="markdown-img" />'
   );
 
   // Links
   html = html.replace(
-    /\[([^\]]+)\]$$([^)]+)$$/gim,
-    '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-primary underline hover:text-primary/80 transition-colors">$1</a>'
-  );
-
-  // Images
-  html = html.replace(
-    /!\[([^\]]*)\]$$([^)]+)$$/gim,
-    '<img src="$2" alt="$1" class="max-w-full h-auto rounded-lg border border-border my-4 shadow-sm" />'
+    /\[([^\]]+)\]\(([^)]+)\)/gim,
+    '<a href="$2" target="_blank" rel="noopener noreferrer" class="markdown-link">$1</a>'
   );
 
   // Blockquotes
   html = html.replace(
     /^> (.*$)/gim,
-    '<blockquote class="border-l-4 border-primary bg-muted/30 ml-0 pl-4 py-2 my-4 italic text-muted-foreground rounded-r-md">$1</blockquote>'
+    '<blockquote class="markdown-blockquote">$1</blockquote>'
   );
 
   // Horizontal rule
-  html = html.replace(/^---$/gim, '<hr class="border-t border-border my-8" />');
+  html = html.replace(/^---$/gim, '<hr class="markdown-hr" />');
 
-  // Task lists (checkboxes)
+  // Task lists (checkboxes) - usando classes customizadas
   html = html.replace(
     /^- \[x\] (.*$)/gim,
-    '<div class="flex items-center my-2 group"><input type="checkbox" checked disabled class="mr-3 accent-primary scale-110"><span class="line-through text-muted-foreground">$1</span></div>'
+    '<div class="markdown-task-item"><input type="checkbox" checked disabled class="markdown-task-checkbox"><span class="markdown-task-text-completed">$1</span></div>'
   );
   html = html.replace(
     /^- \[ \] (.*$)/gim,
-    '<div class="flex items-center my-2 group"><input type="checkbox" disabled class="mr-3 accent-primary scale-110"><span class="text-foreground">$1</span></div>'
+    '<div class="markdown-task-item"><input type="checkbox" disabled class="markdown-task-checkbox"><span class="markdown-task-text">$1</span></div>'
   );
 
   // Numbered lists
   html = html.replace(
     /^\d+\. (.*$)/gim,
-    "<li class='my-1 text-foreground ml-4'>$1</li>"
-  );
-  html = html.replace(
-    /(<li.*<\/li>)/gim,
-    '<ol class="list-decimal list-outside my-4 space-y-1 pl-6">$1</ol>'
+    '<li class="markdown-li numbered-item">$1</li>'
   );
 
   // Regular unordered lists (depois das task lists)
   html = html.replace(
     /^- (.*$)/gim,
-    "<li class='my-1 text-foreground'>• $1</li>"
-  );
-  html = html.replace(
-    /(<li.*<\/li>)/gim,
-    '<ul class="my-4 space-y-1 pl-6">$1</ul>'
+    '<li class="markdown-li unordered-item">$1</li>'
   );
 
-  // Tables (básico)
-  html = html.replace(/\|(.+)\|/gim, (match, content) => {
-    const cells = content.split("|").map((cell: string) => cell.trim());
-    return `<tr>${cells
-      .map(
-        (cell: string) =>
-          `<td class="border border-border px-3 py-2 text-sm">${cell}</td>`
-      )
-      .join("")}</tr>`;
+  // Tables - corrigir regex para capturar corretamente
+  html = html.replace(/^\|(.+)\|/gim, (match, content) => {
+    const cells = content
+      .split("|")
+      .map((cell: string) => cell.trim())
+      .filter((cell) => cell);
+    return `TABLE_ROW${cells
+      .map((cell: string) => `<td class="markdown-td">${cell}</td>`)
+      .join("")}END_TABLE_ROW`;
   });
-  html = html.replace(
-    /(<tr>.*<\/tr>)/gim,
-    '<table class="w-full border-collapse border border-border rounded-lg my-4 overflow-hidden">$1</table>'
-  );
 
   // Strikethrough
+  html = html.replace(/~~(.*?)~~/gim, "<del class='markdown-del'>$1</del>");
+
+  // Agrupar listas numeradas
   html = html.replace(
-    /~~(.*?)~~/gim,
-    "<del class='line-through text-muted-foreground'>$1</del>"
+    /(<li class="markdown-li numbered-item">.*?<\/li>(\s*<li class="markdown-li numbered-item">.*?<\/li>)*)/gim,
+    '<ol class="markdown-ol">$1</ol>'
+  );
+  html = html.replace(/ numbered-item/g, "");
+
+  // Agrupar listas não ordenadas
+  html = html.replace(
+    /(<li class="markdown-li unordered-item">.*?<\/li>(\s*<li class="markdown-li unordered-item">.*?<\/li>)*)/gim,
+    '<ul class="markdown-ul">$1</ul>'
+  );
+  html = html.replace(/ unordered-item/g, "");
+
+  // Agrupar task lists
+  html = html.replace(
+    /(<div class="markdown-task-item">.*?<\/div>(\s*<div class="markdown-task-item">.*?<\/div>)*)/gim,
+    '<div class="markdown-task-container">$1</div>'
   );
 
-  // Line breaks e paragraphs
+  // Agrupar tabelas PRIMEIRO (antes de processar quebras)
   html = html.replace(
-    /\n\n/gim,
-    "</p><p class='my-4 leading-relaxed text-foreground'>"
+    /(TABLE_ROW.*?END_TABLE_ROW(\s*TABLE_ROW.*?END_TABLE_ROW)*)/gim,
+    (match) => {
+      const rows = match.replace(/TABLE_ROW(.*?)END_TABLE_ROW/g, "<tr>$1</tr>");
+      return `<table class="markdown-table"><tbody>${rows}</tbody></table>`;
+    }
   );
-  html = html.replace(/\n/gim, "<br>");
+
+  // Processar quebras de linha com mais cuidado
+  // Apenas duplas quebras viram parágrafos, quebras simples viram <br> só quando necessário
+  html = html.replace(/\n\n+/gim, "</p><p class='markdown-paragraph'>");
+
+  // Quebras simples apenas em texto livre (não em elementos HTML)
+  html = html.replace(/\n(?![<\s])/gim, "<br>");
 
   // Wrap em div principal
-  html = `<div class='prose prose-neutral dark:prose-invert max-w-none space-y-4'><p class='my-4 leading-relaxed text-foreground'>${html}</p></div>`;
+  html = `<div class='markdown-content'><p class='markdown-paragraph'>${html}</p></div>`;
 
   return html;
 }
