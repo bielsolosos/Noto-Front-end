@@ -30,6 +30,9 @@ jobs:
             # Mostrar branch atual
             echo "📍 Current branch: $(git branch --show-current)"
 
+
+            git fetch 
+
             # Pull das mudanças
             echo "📥 Pulling latest changes..."
             git pull origin $(git branch --show-current)
