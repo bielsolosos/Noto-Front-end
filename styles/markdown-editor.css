@@ -1,0 +1,209 @@
+/* Estilos customizados para o ReactMD Editor */
+
+/* Container principal do editor */
+.markdown-editor .w-md-editor {
+  background-color: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.markdown-editor .w-md-editor:focus-within {
+  ring: 2px solid hsl(var(--primary));
+  ring-offset: 2px;
+}
+
+/* Toolbar */
+.markdown-editor .w-md-editor-toolbar {
+  background-color: hsl(var(--muted) / 0.5);
+  border-bottom: 1px solid hsl(var(--border));
+  padding: 0.5rem;
+}
+
+.markdown-editor .w-md-editor-toolbar button {
+  color: hsl(var(--muted-foreground));
+  background-color: transparent;
+  border: none;
+  padding: 0.375rem 0.5rem;
+  margin: 0 0.125rem;
+  border-radius: 0.375rem;
+  transition: all 0.15s ease;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.markdown-editor .w-md-editor-toolbar button:hover {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+.markdown-editor .w-md-editor-toolbar button.active {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+/* Area de texto */
+.markdown-editor .w-md-editor-text-textarea {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  border: none;
+  outline: none;
+  padding: 1rem;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  resize: none;
+}
+
+.markdown-editor .w-md-editor-text-textarea::placeholder {
+  color: hsl(var(--muted-foreground));
+  opacity: 0.7;
+}
+
+.markdown-editor .w-md-editor-text-textarea:focus {
+  outline: none;
+}
+
+/* Area de preview */
+.markdown-editor .w-md-editor-preview {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+/* Divisor entre editor e preview */
+.markdown-editor .w-md-editor-split {
+  background-color: hsl(var(--border));
+  width: 1px;
+}
+
+/* Syntax highlighting para o código no editor */
+.markdown-editor .token.title,
+.markdown-editor .token.title.important {
+  color: hsl(var(--primary));
+  font-weight: bold;
+}
+
+.markdown-editor .token.bold {
+  color: hsl(var(--foreground));
+  font-weight: bold;
+}
+
+.markdown-editor .token.italic {
+  color: hsl(var(--foreground));
+  font-style: italic;
+}
+
+.markdown-editor .token.code {
+  background-color: hsl(var(--muted));
+  color: hsl(var(--primary));
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  font-size: 0.875em;
+}
+
+.markdown-editor .token.url,
+.markdown-editor .token.link {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+}
+
+.markdown-editor .token.list.punctuation {
+  color: hsl(var(--primary));
+  font-weight: bold;
+}
+
+.markdown-editor .token.hr.punctuation {
+  color: hsl(var(--muted-foreground));
+}
+
+.markdown-editor .token.blockquote.punctuation {
+  color: hsl(var(--muted-foreground));
+  font-weight: bold;
+}
+
+/* Melhorias para temas escuros */
+[data-theme="dark"] .markdown-editor .w-md-editor,
+.dark .markdown-editor .w-md-editor {
+  border-color: hsl(var(--border));
+}
+
+[data-theme="dark"] .markdown-editor .w-md-editor-toolbar,
+.dark .markdown-editor .w-md-editor-toolbar {
+  background-color: hsl(var(--muted) / 0.3);
+}
+
+/* Animações suaves */
+.markdown-editor .w-md-editor-toolbar button,
+.markdown-editor .w-md-editor-text-textarea,
+.markdown-editor .w-md-editor-preview {
+  transition: all 0.2s ease;
+}
+
+/* Estilos para fullscreen */
+.markdown-editor.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  background-color: hsl(var(--background));
+  padding: 1rem;
+}
+
+.markdown-editor.fullscreen .w-md-editor {
+  height: calc(100vh - 2rem);
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+  .markdown-editor .w-md-editor-toolbar {
+    padding: 0.375rem;
+    flex-wrap: wrap;
+  }
+
+  .markdown-editor .w-md-editor-toolbar button {
+    padding: 0.25rem 0.375rem;
+    font-size: 0.8rem;
+  }
+
+  .markdown-editor .w-md-editor-text-textarea {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .markdown-editor .w-md-editor-preview {
+    padding: 0.75rem;
+  }
+}
+
+/* Scrollbars customizadas */
+.markdown-editor .w-md-editor-text-textarea::-webkit-scrollbar,
+.markdown-editor .w-md-editor-preview::-webkit-scrollbar {
+  width: 8px;
+}
+
+.markdown-editor .w-md-editor-text-textarea::-webkit-scrollbar-track,
+.markdown-editor .w-md-editor-preview::-webkit-scrollbar-track {
+  background: hsl(var(--muted) / 0.3);
+  border-radius: 4px;
+}
+
+.markdown-editor .w-md-editor-text-textarea::-webkit-scrollbar-thumb,
+.markdown-editor .w-md-editor-preview::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 4px;
+}
+
+.markdown-editor .w-md-editor-text-textarea::-webkit-scrollbar-thumb:hover,
+.markdown-editor .w-md-editor-preview::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
