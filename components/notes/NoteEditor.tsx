@@ -28,11 +28,29 @@ export function NoteEditor() {
   const { editTitle, editContent, handleTitleChange, handleContentChange } =
     useNotes();
 
+  // Estado com localStorage para persistir o modo preferido
   const [previewMode, setPreviewMode] = useState<"edit" | "preview" | "split">(
-    "edit"
+    () => {
+      if (typeof window !== "undefined") {
+        return (
+          (localStorage.getItem("noteEditorMode") as
+            | "edit"
+            | "preview"
+            | "split") || "edit"
+        );
+      }
+      return "edit";
+    }
   );
   const [isFullscreen, setIsFullscreen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Salvar no localStorage quando o modo mudar
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("noteEditorMode", previewMode);
+    }
+  }, [previewMode]);
 
   // Sistema de Undo/Redo
   const [history, setHistory] = useState<string[]>([editContent]);
