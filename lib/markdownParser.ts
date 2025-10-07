@@ -39,7 +39,7 @@ export function parseMarkdown(markdown: string): string {
   // Images (ANTES dos links para não conflitar)
   html = html.replace(
     /!\[([^\]]*)\]\(([^)]+)\)/gim,
-    '<img src="$2" alt="$1" class="markdown-img" />'
+    '<div class="markdown-img-container" onclick="openImageModal(\'$2\', \'$1\')"><img src="$2" alt="$1" class="markdown-img" /><div class="markdown-img-overlay"><span class="markdown-img-zoom-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-6-6m6 6v-4.8m0 4.8h-4.8"/><path d="M3 16.2V21m0 0h4.8M3 21l6-6"/><path d="M21 7.8V3m0 0h-4.8M21 3l-6 6"/><path d="M3 7.8V3m0 0h4.8M3 3l6 6"/></svg></span></div></div>'
   );
 
   // Links
@@ -133,4 +133,66 @@ export function parseMarkdown(markdown: string): string {
   html = `<div class='markdown-content'><p class='markdown-paragraph'>${html}</p></div>`;
 
   return html;
+}
+
+// Função para abrir modal de imagem
+export function openImageModal(src: string, alt: string): void {
+  // Remove modal existente se houver
+  const existingModal = document.getElementById("image-modal");
+  if (existingModal) {
+    existingModal.remove();
+  }
+
+  // Cria o modal
+  const modal = document.createElement("div");
+  modal.id = "image-modal";
+  modal.className = "image-modal-overlay";
+  modal.innerHTML = `
+    <div class="image-modal-content">
+      <button class="image-modal-close" onclick="closeImageModal()">&times;</button>
+      <img src="${src}" alt="${alt}" class="image-modal-img" />
+      <div class="image-modal-caption">${alt}</div>
+    </div>
+  `;
+
+  // Adiciona event listeners
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      closeImageModal();
+    }
+  });
+
+  document.addEventListener("keydown", handleModalKeydown);
+  document.body.appendChild(modal);
+  document.body.style.overflow = "hidden";
+}
+
+// Função para fechar modal de imagem
+export function closeImageModal(): void {
+  const modal = document.getElementById("image-modal");
+  if (modal) {
+    modal.remove();
+    document.body.style.overflow = "";
+    document.removeEventListener("keydown", handleModalKeydown);
+  }
+}
+
+// Handler para teclas do modal
+function handleModalKeydown(e: KeyboardEvent): void {
+  if (e.key === "Escape") {
+    closeImageModal();
+  }
+}
+
+// Torna as funções globalmente acessíveis
+declare global {
+  interface Window {
+    openImageModal: (src: string, alt: string) => void;
+    closeImageModal: () => void;
+  }
+}
+
+if (typeof window !== "undefined") {
+  window.openImageModal = openImageModal;
+  window.closeImageModal = closeImageModal;
 }
