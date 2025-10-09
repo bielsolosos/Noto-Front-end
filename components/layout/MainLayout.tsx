@@ -1,8 +1,10 @@
 "use client";
 
+import { useSidebar } from "@/contexts/SidebarContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useMobile } from "@/hooks/useMobile";
+import { cn } from "@/lib/utils";
 import { Toaster } from "react-hot-toast";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { Header } from "./Header";
@@ -11,6 +13,7 @@ import { Sidebar } from "./Sidebar";
 
 export function MainLayout() {
   const { darkMode } = useTheme();
+  const { isCollapsed } = useSidebar();
   const isMobile = useMobile();
   useKeyboardShortcuts();
 
@@ -30,7 +33,12 @@ export function MainLayout() {
         <Header />
         <div className="flex pt-16">
           {!isMobile && <Sidebar />}
-          <div className={`flex-1 ${!isMobile ? "ml-80" : ""}`}>
+          <div
+            className={cn(
+              "flex-1 transition-all duration-300 ease-in-out",
+              !isMobile && (isCollapsed ? "ml-16" : "ml-80")
+            )}
+          >
             <MainContent />
           </div>
         </div>

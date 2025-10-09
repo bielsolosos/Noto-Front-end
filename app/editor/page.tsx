@@ -2,13 +2,16 @@
 
 import { MainLayout } from "@/components/layout/MainLayout";
 import { NotesProvider } from "@/contexts/NotesContext";
+import { SidebarProvider } from "@/contexts/SidebarContext";
 import { Suspense } from "react";
 
 function EditorContent() {
   return (
-    <NotesProvider>
-      <MainLayout />
-    </NotesProvider>
+    <SidebarProvider>
+      <NotesProvider>
+        <MainLayout />
+      </NotesProvider>
+    </SidebarProvider>
   );
 }
 

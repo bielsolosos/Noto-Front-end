@@ -1,6 +1,7 @@
 "use client";
 
 import { useNotes } from "@/contexts/NotesContext";
+import { useSidebar } from "@/contexts/SidebarContext";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 
@@ -13,6 +14,8 @@ export function useKeyboardShortcuts() {
     startEditing,
     createNewPage,
   } = useNotes();
+
+  const { toggleSidebar } = useSidebar();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -54,6 +57,13 @@ export function useKeyboardShortcuts() {
         e.preventDefault();
         createNewPage();
       }
+
+      // Ctrl+B: Toggle sidebar
+      if (e.ctrlKey && e.key === "b") {
+        e.preventDefault();
+        toggleSidebar();
+        toast("Sidebar alternada", { icon: "📱" });
+      }
     };
 
     document.addEventListener("keydown", handleKeyDown);
@@ -65,5 +75,6 @@ export function useKeyboardShortcuts() {
     cancelEdit,
     startEditing,
     createNewPage,
+    toggleSidebar,
   ]);
 }
