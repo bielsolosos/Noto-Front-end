@@ -1,53 +1,64 @@
 "use client";
 
-import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { parseMarkdown } from "@/lib/markdownParser";
+import {
+  ArrowRight,
+  Edit3,
+  Lock,
+  Moon,
+  Paintbrush,
+  Sparkles,
+  Sun,
+  Zap,
+} from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 
-export default function LoginScreen() {
-  return <LoginContent />;
-}
-
-const loginSchema = z.object({
-  email: z.string().email("Email inválido"),
-  password: z.string().min(8, "A senha deve ter no mínimo 8 caracteres"),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
-
-function LoginContent() {
+export default function LandingPage() {
   const { darkMode, toggleDarkMode } = useTheme();
-  const { login } = useAuth();
-  const [showPassword, setShowPassword] = useState(false);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) });
+  const [demoContent, setDemoContent] = useState(
+    '# Bem-vindo ao NOTO\n\n**Organize** suas *ideias* de forma `simples` e eficiente.\n\n- [x] Editor intuitivo\n- [x] Markdown em tempo real\n- [ ] Suas próximas grandes ideias\n\n> "A simplicidade é a sofisticação suprema" - Leonardo da Vinci'
+  );
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
   }, [darkMode]);
 
-  const onSubmit = async (data: LoginFormData) => {
-    try {
-      await login(data.email, data.password);
-    } catch (error) {
-      alert("Login falhou");
-    }
-  };
+  const features = [
+    {
+      icon: <Edit3 className="w-6 h-6" />,
+      title: "Editor Markdown Inteligente",
+      description:
+        "Formatação automática conforme você digita. Listas, títulos, links - tudo funciona naturalmente.",
+    },
+    {
+      icon: <Zap className="w-6 h-6" />,
+      title: "Atalhos Poderosos",
+      description:
+        "Ctrl+B para negrito, Ctrl+I para itálico, Enter para continuar listas. Produtividade máxima.",
+    },
+    {
+      icon: <Paintbrush className="w-6 h-6" />,
+      title: "Design que não Distrai",
+      description:
+        "Interface limpa e minimalista. Foque no que importa: seu conteúdo.",
+    },
+    {
+      icon: <Lock className="w-6 h-6" />,
+      title: "Privado por Design",
+      description:
+        "Suas anotações ficam seguras. Cada página é privada e pertence apenas a você.",
+    },
+  ];
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
-      {/* Animated background */}
+      {/* Background animado */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-card/30" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-primary/5" />
         <div className="absolute top-0 left-0 w-full h-full">
-          {Array.from({ length: 20 }).map((_, i) => (
+          {Array.from({ length: 15 }).map((_, i) => (
             <div
               key={i}
               className="animate-float"
@@ -55,208 +66,245 @@ function LoginContent() {
                 position: "absolute",
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
-                width: `${Math.random() * 3 + 1}rem`,
-                height: `${Math.random() * 3 + 1}rem`,
-                opacity: 0.1,
+                width: `${Math.random() * 2 + 0.5}rem`,
+                height: `${Math.random() * 2 + 0.5}rem`,
+                opacity: 0.05,
                 background: `hsl(var(--primary))`,
                 borderRadius: "50%",
-                filter: "blur(8px)",
-                animation: `float ${Math.random() * 10 + 15}s linear infinite`,
-                animationDelay: `${Math.random() * 5}s`,
+                filter: "blur(6px)",
+                animation: `float ${Math.random() * 15 + 20}s linear infinite`,
+                animationDelay: `${Math.random() * 10}s`,
               }}
             />
           ))}
         </div>
       </div>
 
-      {/* Login container */}
-      <div className="relative z-10 min-h-screen flex items-center justify-center px-4">
-        <div
-          className="w-full max-w-md rounded-2xl p-8"
-          style={{
-            backgroundColor: "hsl(var(--card) / 0.8)",
-            color: "hsl(var(--card-foreground))",
-            borderRadius: "var(--radius)",
-            backdropFilter: "blur(12px)",
-            boxShadow: `
-              0 0 0 1px hsl(var(--border) / 0.1),
-              0 20px 25px -5px rgb(0 0 0 / 0.1),
-              0 10px 10px -5px rgb(0 0 0 / 0.04)
-            `,
-          }}
-        >
-          <div className="flex flex-col items-center mb-8">
-            <div className="w-16 h-16 mb-4 rounded-2xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
-              <span className="text-2xl font-bold text-primary-foreground">
+      {/* Header */}
+      <header className="relative z-10 p-6">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
+              <span className="text-lg font-bold text-primary-foreground">
                 N
               </span>
             </div>
-            <h2 className="text-3xl font-bold">NOTO</h2>
-            <p className="text-sm text-muted-foreground mt-2">
-              Faça login para continuar
+            <span className="text-xl font-bold">NOTO</span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <button
+              onClick={toggleDarkMode}
+              className="p-2 rounded-lg hover:bg-primary/10 transition-colors duration-200"
+              aria-label="Alternar tema"
+            >
+              {darkMode ? (
+                <Sun className="w-5 h-5 text-primary" />
+              ) : (
+                <Moon className="w-5 h-5 text-primary" />
+              )}
+            </button>
+
+            <Link
+              href="/login"
+              className="px-4 py-2 text-sm font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors duration-200"
+            >
+              Fazer Login
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="relative z-10 pt-20 pb-32 px-6">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-8">
+            <Sparkles className="w-4 h-4" />
+            <span>Editor de anotações moderno e intuitivo</span>
+          </div>
+
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+            Suas ideias merecem
+            <br />
+            <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+              um lar melhor
+            </span>
+          </h1>
+
+          <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed">
+            Editor de anotações minimalista e poderoso. Organize suas ideias com
+            Markdown, atalhos inteligentes e uma interface que não distrai.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Link
+              href="/login"
+              className="group inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-200 transform hover:scale-105"
+            >
+              <span>Começar agora</span>
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
+            </Link>
+
+            <button
+              onClick={() =>
+                document
+                  .getElementById("demo")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
+              className="inline-flex items-center gap-2 text-primary hover:bg-primary/10 px-8 py-4 rounded-xl text-lg font-semibold transition-colors duration-200"
+            >
+              Ver demonstração
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="relative z-10 py-24 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Feito para produtividade
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Cada funcionalidade foi pensada para tornar suas anotações mais
+              fluidas e organizadas.
             </p>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="space-y-4">
-              <div>
-                <label
-                  className="block mb-2 text-sm font-medium"
-                  htmlFor="email"
-                >
-                  Email
-                </label>
-                <div className="relative">
-                  <input
-                    id="email"
-                    type="email"
-                    {...register("email")}
-                    className="w-full px-4 py-3 rounded-lg border transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-                    style={{
-                      borderColor: "hsl(var(--border))",
-                      backgroundColor: "hsl(var(--background))",
-                      color: "hsl(var(--foreground))",
-                    }}
-                    autoComplete="email"
-                    placeholder="Email"
-                  />
-                  {errors.email && (
-                    <p className="mt-1.5 text-sm text-destructive">
-                      {errors.email.message}
-                    </p>
-                  )}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature, index) => (
+              <div
+                key={index}
+                className="group p-6 rounded-2xl bg-card/50 backdrop-blur-sm border border-border hover:border-primary/20 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5"
+              >
+                <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
+                  {feature.icon}
                 </div>
+                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  {feature.description}
+                </p>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-              <div>
-                <label
-                  className="block mb-2 text-sm font-medium"
-                  htmlFor="password"
-                >
-                  Senha
-                </label>
-                <div className="relative">
-                  <input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    {...register("password")}
-                    className="w-full px-4 py-3 rounded-lg border transition-all duration-200 focus:ring-2 focus:ring-primary/20 pr-12"
-                    style={{
-                      borderColor: "hsl(var(--border))",
-                      backgroundColor: "hsl(var(--background))",
-                      color: "hsl(var(--foreground))",
-                    }}
-                    autoComplete="current-password"
-                    placeholder="Senha"
-                  />
-                  <button
-                    type="button"
-                    aria-label={
-                      showPassword ? "Ocultar senha" : "Mostrar senha"
-                    }
-                    onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-primary/10 focus:outline-none"
-                  >
-                    {showPassword ? (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-5 h-5 text-primary"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M3 3l18 18M9.88 9.88A3 3 0 0012 15a3 3 0 002.12-5.12M15.12 15.12A8.96 8.96 0 0112 17c-4.418 0-8-3.582-8-8 0-1.657.672-3.156 1.76-4.24m2.12 2.12A8.96 8.96 0 0112 7c4.418 0 8 3.582 8 8 0 1.657-.672 3.156-1.76 4.24"
-                        />
-                      </svg>
-                    ) : (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="w-5 h-5 text-primary"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-.274.857-.687 1.654-1.217 2.36M15.12 15.12A8.96 8.96 0 0112 17c-4.418 0-8-3.582-8-8 0-1.657.672-3.156 1.76-4.24"
-                        />
-                      </svg>
-                    )}
-                  </button>
-                  {errors.password && (
-                    <p className="mt-1.5 text-sm text-destructive">
-                      {errors.password.message}
-                    </p>
-                  )}
+      {/* Demo Section */}
+      <section id="demo" className="relative z-10 py-24 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Veja o editor em ação
+            </h2>
+            <p className="text-xl text-muted-foreground">
+              Digite e veja a formatação acontecer em tempo real
+            </p>
+          </div>
+
+          <div className="bg-card/70 backdrop-blur-sm border border-border rounded-2xl overflow-hidden shadow-2xl">
+            <div className="bg-muted/50 px-6 py-3 border-b border-border">
+              <div className="flex items-center gap-2">
+                <div className="flex gap-2">
+                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                 </div>
+                <span className="text-sm text-muted-foreground ml-4">
+                  Editor NOTO
+                </span>
               </div>
             </div>
 
-            <button
-              type="submit"
-              className="w-full py-3 rounded-lg font-medium relative overflow-hidden transition-all duration-200"
-              style={{
-                backgroundColor: "hsl(var(--primary))",
-                color: "hsl(var(--primary-foreground))",
-              }}
-            >
-              <span className="relative z-10">Entrar</span>
-              <div
-                className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-200"
-                style={{
-                  background:
-                    "linear-gradient(45deg, transparent, hsl(var(--primary) / 0.3), transparent)",
-                  transform: "translateX(-100%)",
-                  animation: "shine 1.5s infinite",
-                }}
-              />
-            </button>
-          </form>
-        </div>
-      </div>
+            <div className="grid md:grid-cols-2 h-96">
+              {/* Editor lado esquerdo */}
+              <div className="relative">
+                <textarea
+                  value={demoContent}
+                  onChange={(e) => setDemoContent(e.target.value)}
+                  className="w-full h-full p-6 bg-transparent resize-none focus:outline-none border-0 font-mono text-sm"
+                  placeholder="Digite aqui seu Markdown..."
+                />
+              </div>
 
-      {/* Botão de alternância de tema no canto inferior direito */}
-      <button
-        onClick={toggleDarkMode}
-        className="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-card shadow-lg border border-border transition-colors duration-200 hover:bg-primary/10"
-        aria-label="Alternar tema"
-        type="button"
-      >
-        {darkMode ? (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            className="w-6 h-6 text-primary"
-          >
-            <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z" />
-          </svg>
-        ) : (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            className="w-6 h-6 text-primary"
-          >
-            <path
-              fillRule="evenodd"
-              d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z"
-              clipRule="evenodd"
-            />
-          </svg>
-        )}
-      </button>
+              {/* Preview lado direito */}
+              <div className="border-l border-border">
+                <div className="w-full h-full p-6 overflow-y-auto">
+                  <div
+                    className="prose prose-sm prose-neutral dark:prose-invert max-w-none"
+                    dangerouslySetInnerHTML={{
+                      __html: demoContent
+                        ? parseMarkdown(demoContent)
+                        : "<p class='text-muted-foreground italic'>Preview aparecerá aqui...</p>",
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/**
+       * {/*\ CTA Final *\/}
+      <section className="relative z-10 py-24 px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            Pronto para organizar suas ideias?
+          </h2>
+          <p className="text-xl text-muted-foreground mb-12">
+            Junte-se a centenas de pessoas que já escolheram o NOTO para suas
+            anotações.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Link
+              href="/login"
+              className="group inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-200 transform hover:scale-105"
+            >
+              <span>Começar gratuitamente</span>
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-200" />
+            </Link>
+          </div>
+
+          <div className="flex items-center justify-center gap-6 mt-12 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-500" />
+              <span>Gratuito para sempre</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-500" />
+              <span>Sem limites de páginas</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-green-500" />
+              <span>100% privado</span>
+            </div>
+          </div>
+        </div>
+      </section> 
+      **/}
+
+      {/* Footer */}
+      <footer className="relative z-10 py-12 px-6 border-t border-border">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
+                <span className="text-sm font-bold text-primary-foreground">
+                  N
+                </span>
+              </div>
+              <span className="font-semibold">NOTO</span>
+            </div>
+
+            <p className="text-sm text-muted-foreground">
+              © 2025 NOTO. Criado com ❤️ por bielsolosos
+            </p>
+          </div>
+        </div>
+      </footer>
 
       <style jsx>{`
         @keyframes float {
@@ -264,18 +312,10 @@ function LoginContent() {
             transform: translateY(0) rotate(0deg);
           }
           50% {
-            transform: translateY(-20px) rotate(180deg);
+            transform: translateY(-15px) rotate(180deg);
           }
           100% {
             transform: translateY(0) rotate(360deg);
-          }
-        }
-        @keyframes shine {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(100%);
           }
         }
       `}</style>
