@@ -118,7 +118,7 @@ function LoginContent() {
                       color: "hsl(var(--foreground))",
                     }}
                     autoComplete="email"
-                    placeholder="seu@email.com"
+                    placeholder="Email"
                   />
                   {errors.email && (
                     <p className="mt-1.5 text-sm text-destructive">
@@ -147,7 +147,7 @@ function LoginContent() {
                       color: "hsl(var(--foreground))",
                     }}
                     autoComplete="current-password"
-                    placeholder="••••••••"
+                    placeholder="Senha"
                   />
                   <button
                     type="button"

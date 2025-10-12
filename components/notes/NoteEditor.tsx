@@ -106,6 +106,10 @@ export function NoteEditor() {
       const end = textarea.selectionEnd;
       const selectedText = editContent.substring(start, end);
 
+      // Salvar a posição do scroll atual
+      const scrollTop = textarea.scrollTop;
+      const scrollLeft = textarea.scrollLeft;
+
       const newText =
         selectText && selectedText
           ? beforeText + selectedText + afterText
@@ -116,14 +120,23 @@ export function NoteEditor() {
 
       handleContentChange(newContent);
 
-      // Reposicionar cursor
+      // Reposicionar cursor preservando o scroll
       setTimeout(() => {
         const newCursorPos =
           selectText && selectedText
             ? start + beforeText.length + selectedText.length + afterText.length
             : start + beforeText.length;
+
+        // Restaurar scroll antes de focar
+        textarea.scrollTop = scrollTop;
+        textarea.scrollLeft = scrollLeft;
+
         textarea.focus();
         textarea.setSelectionRange(newCursorPos, newCursorPos);
+
+        // Garantir que o scroll seja mantido após o focus
+        textarea.scrollTop = scrollTop;
+        textarea.scrollLeft = scrollLeft;
       }, 0);
     },
     [editContent, handleContentChange]
@@ -169,6 +182,10 @@ export function NoteEditor() {
         const lines = editContent.substring(0, start).split("\n");
         const currentLine = lines[lines.length - 1];
 
+        // Salvar posição do scroll
+        const scrollTop = textarea.scrollTop;
+        const scrollLeft = textarea.scrollLeft;
+
         // Lista não ordenada (- item)
         const unorderedListMatch = currentLine.match(/^(\s*)-\s(.*)$/);
         if (unorderedListMatch) {
@@ -184,6 +201,8 @@ export function NoteEditor() {
               editContent.substring(start);
             handleContentChange(newContent);
             setTimeout(() => {
+              textarea.scrollTop = scrollTop;
+              textarea.scrollLeft = scrollLeft;
               textarea.setSelectionRange(
                 start - currentLine.length + indent.length,
                 start - currentLine.length + indent.length
@@ -200,6 +219,8 @@ export function NoteEditor() {
             handleContentChange(newContent);
             setTimeout(() => {
               const newPos = start + indent.length + 3;
+              textarea.scrollTop = scrollTop;
+              textarea.scrollLeft = scrollLeft;
               textarea.setSelectionRange(newPos, newPos);
             }, 0);
           }
@@ -222,6 +243,8 @@ export function NoteEditor() {
               editContent.substring(start);
             handleContentChange(newContent);
             setTimeout(() => {
+              textarea.scrollTop = scrollTop;
+              textarea.scrollLeft = scrollLeft;
               textarea.setSelectionRange(
                 start - currentLine.length + indent.length,
                 start - currentLine.length + indent.length
@@ -241,6 +264,8 @@ export function NoteEditor() {
             setTimeout(() => {
               const newPos =
                 start + indent.length + nextNumber.toString().length + 3;
+              textarea.scrollTop = scrollTop;
+              textarea.scrollLeft = scrollLeft;
               textarea.setSelectionRange(newPos, newPos);
             }, 0);
           }
@@ -262,6 +287,8 @@ export function NoteEditor() {
               editContent.substring(start);
             handleContentChange(newContent);
             setTimeout(() => {
+              textarea.scrollTop = scrollTop;
+              textarea.scrollLeft = scrollLeft;
               textarea.setSelectionRange(
                 start - currentLine.length + indent.length,
                 start - currentLine.length + indent.length
@@ -278,6 +305,8 @@ export function NoteEditor() {
             handleContentChange(newContent);
             setTimeout(() => {
               const newPos = start + indent.length + 3;
+              textarea.scrollTop = scrollTop;
+              textarea.scrollLeft = scrollLeft;
               textarea.setSelectionRange(newPos, newPos);
             }, 0);
           }
@@ -299,6 +328,8 @@ export function NoteEditor() {
               editContent.substring(start);
             handleContentChange(newContent);
             setTimeout(() => {
+              textarea.scrollTop = scrollTop;
+              textarea.scrollLeft = scrollLeft;
               textarea.setSelectionRange(
                 start - currentLine.length + indent.length,
                 start - currentLine.length + indent.length
@@ -315,6 +346,8 @@ export function NoteEditor() {
             handleContentChange(newContent);
             setTimeout(() => {
               const newPos = start + indent.length + 6;
+              textarea.scrollTop = scrollTop;
+              textarea.scrollLeft = scrollLeft;
               textarea.setSelectionRange(newPos, newPos);
             }, 0);
           }
@@ -433,16 +466,6 @@ export function NoteEditor() {
             </Button>
 
             <Button
-              variant={previewMode === "split" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setPreviewMode("split")}
-              className="flex items-center gap-2"
-            >
-              <Eye className="w-4 h-4" />
-              Split
-            </Button>
-
-            <Button
               variant={previewMode === "preview" ? "default" : "ghost"}
               size="sm"
               onClick={() => setPreviewMode("preview")}
@@ -450,6 +473,16 @@ export function NoteEditor() {
             >
               <EyeOff className="w-4 h-4" />
               Preview
+            </Button>
+
+            <Button
+              variant={previewMode === "split" ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setPreviewMode("split")}
+              className="flex items-center gap-2"
+            >
+              <Eye className="w-4 h-4" />
+              Split
             </Button>
 
             <div className="ml-auto">
