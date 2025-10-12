@@ -54,29 +54,19 @@ export default function LandingPage() {
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
-      {/* Background animado */}
+      {/* Background estático */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-primary/5" />
         <div className="absolute top-0 left-0 w-full h-full">
-          {Array.from({ length: 15 }).map((_, i) => (
-            <div
-              key={i}
-              className="animate-float"
-              style={{
-                position: "absolute",
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                width: `${Math.random() * 2 + 0.5}rem`,
-                height: `${Math.random() * 2 + 0.5}rem`,
-                opacity: 0.05,
-                background: `hsl(var(--primary))`,
-                borderRadius: "50%",
-                filter: "blur(6px)",
-                animation: `float ${Math.random() * 15 + 20}s linear infinite`,
-                animationDelay: `${Math.random() * 10}s`,
-              }}
-            />
-          ))}
+          {/* Elementos decorativos fixos */}
+          <div className="absolute top-[10%] left-[15%] w-4 h-4 opacity-[0.03] bg-primary rounded-full blur-sm" />
+          <div className="absolute top-[25%] right-[20%] w-6 h-6 opacity-[0.04] bg-primary rounded-full blur-md" />
+          <div className="absolute top-[60%] left-[10%] w-3 h-3 opacity-[0.05] bg-primary rounded-full blur-sm" />
+          <div className="absolute top-[80%] right-[15%] w-5 h-5 opacity-[0.03] bg-primary rounded-full blur-md" />
+          <div className="absolute top-[40%] left-[70%] w-4 h-4 opacity-[0.04] bg-primary rounded-full blur-sm" />
+          <div className="absolute top-[15%] left-[60%] w-2 h-2 opacity-[0.05] bg-primary rounded-full blur-sm" />
+          <div className="absolute top-[70%] left-[30%] w-6 h-6 opacity-[0.03] bg-primary rounded-full blur-md" />
+          <div className="absolute top-[35%] right-[30%] w-3 h-3 opacity-[0.04] bg-primary rounded-full blur-sm" />
         </div>
       </div>
 
@@ -306,19 +296,6 @@ export default function LandingPage() {
         </div>
       </footer>
 
-      <style jsx>{`
-        @keyframes float {
-          0% {
-            transform: translateY(0) rotate(0deg);
-          }
-          50% {
-            transform: translateY(-15px) rotate(180deg);
-          }
-          100% {
-            transform: translateY(0) rotate(360deg);
-          }
-        }
-      `}</style>
     </div>
   );
 }

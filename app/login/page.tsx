@@ -44,29 +44,17 @@ function LoginContent() {
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
-      {/* Animated background */}
+      {/* Background estático */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-card/30" />
         <div className="absolute top-0 left-0 w-full h-full">
-          {Array.from({ length: 20 }).map((_, i) => (
-            <div
-              key={i}
-              className="animate-float"
-              style={{
-                position: "absolute",
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                width: `${Math.random() * 3 + 1}rem`,
-                height: `${Math.random() * 3 + 1}rem`,
-                opacity: 0.1,
-                background: `hsl(var(--primary))`,
-                borderRadius: "50%",
-                filter: "blur(8px)",
-                animation: `float ${Math.random() * 10 + 15}s linear infinite`,
-                animationDelay: `${Math.random() * 5}s`,
-              }}
-            />
-          ))}
+          {/* Elementos decorativos fixos */}
+          <div className="absolute top-[20%] left-[10%] w-8 h-8 opacity-[0.08] bg-primary rounded-full blur-lg" />
+          <div className="absolute top-[70%] right-[15%] w-12 h-12 opacity-[0.06] bg-primary rounded-full blur-xl" />
+          <div className="absolute top-[40%] left-[80%] w-6 h-6 opacity-[0.10] bg-primary rounded-full blur-md" />
+          <div className="absolute top-[85%] left-[25%] w-10 h-10 opacity-[0.07] bg-primary rounded-full blur-lg" />
+          <div className="absolute top-[15%] right-[30%] w-4 h-4 opacity-[0.09] bg-primary rounded-full blur-md" />
+          <div className="absolute top-[60%] left-[5%] w-14 h-14 opacity-[0.05] bg-primary rounded-full blur-xl" />
         </div>
       </div>
 
@@ -211,17 +199,6 @@ function LoginContent() {
       </button>
 
       <style jsx>{`
-        @keyframes float {
-          0% {
-            transform: translateY(0) rotate(0deg);
-          }
-          50% {
-            transform: translateY(-20px) rotate(180deg);
-          }
-          100% {
-            transform: translateY(0) rotate(360deg);
-          }
-        }
         @keyframes shine {
           0% {
             transform: translateX(-100%);
