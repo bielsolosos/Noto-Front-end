@@ -22,7 +22,6 @@
 - **Icons**: Lucide React (vetoriais e modernos)
 - **Forms**: React Hook Form + Zod validation
 - **State**: React Context API + Custom Hooks
-- **Deploy**: Vercel com CI/CD automático
 
 ### **Estrutura de Projeto**
 
