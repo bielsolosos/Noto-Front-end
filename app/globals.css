@@ -1,8 +1,8 @@
+@import "../styles/markdown.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import "../styles/markdown.css";
 
 @layer base {
   :root {
