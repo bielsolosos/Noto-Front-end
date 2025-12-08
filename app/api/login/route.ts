@@ -3,9 +3,12 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(request: NextRequest) {
   const { email, password } = await request.json();
 
-  // A API Key está só aqui, no servidor!
-  const apiUrl = process.env.AUTH_API_URL || "http://localhost:8080";
-  const apiKey = process.env.AUTH_API_KEY || "batatinha123";
+  // No servidor Next.js, usar o nome do container na rede Docker
+  const apiUrl = "http://backend:8080";
+  const apiKey = process.env.AUTH_API_KEY || process.env.API_KEY || "batatinha123";
+
+  console.log("[Login Route] API URL:", apiUrl);
+  console.log("[Login Route] API Key:", apiKey ? "✓" : "✗");
 
   const res = await fetch(`${apiUrl}/auth`, {
     method: "POST",
@@ -13,8 +16,8 @@ export async function POST(request: NextRequest) {
     body: JSON.stringify({ email, password, apiKey }),
   });
 
-  console.log(apiKey);
   if (!res.ok) {
+    console.error("[Login Route] Auth failed:", res.status, res.statusText);
     return NextResponse.json({ error: "Login falhou" }, { status: 401 });
   }
 

@@ -1,8 +1,16 @@
 import axios from "axios";
 import toast from "react-hot-toast";
 
-// Usa variável de ambiente com fallback local
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+// Detectar se está no servidor ou no cliente
+const isServer = typeof window === "undefined";
+
+// No servidor, sempre usa o backend interno
+// No cliente, usa a variável de ambiente pública
+const apiUrl = isServer 
+  ? "http://backend:8080"
+  : process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+
+console.log(`[API] ${isServer ? 'Server' : 'Client'}-side URL:`, apiUrl);
 
 const api = axios.create({
   baseURL: apiUrl,
