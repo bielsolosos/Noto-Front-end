@@ -5,7 +5,8 @@ export async function POST(request: NextRequest) {
 
   // No servidor Next.js, usar o nome do container na rede Docker
   const apiUrl = "http://backend:8080";
-  const apiKey = process.env.AUTH_API_KEY || process.env.API_KEY || "batatinha123";
+  const apiKey =
+    process.env.AUTH_API_KEY || process.env.API_KEY || "batatinha123";
 
   console.log("[Login Route] API URL:", apiUrl);
   console.log("[Login Route] API Key:", apiKey ? "✓" : "✗");
