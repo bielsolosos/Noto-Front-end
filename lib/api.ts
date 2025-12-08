@@ -4,9 +4,24 @@ import toast from "react-hot-toast";
 // Detectar se está no servidor ou no cliente
 const isServer = typeof window === "undefined";
 
-// No servidor, sempre usa o backend interno
-// No cliente, usa a variável de ambiente pública
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+// Função para obter a URL da API dinamicamente
+const getApiUrl = () => {
+  if (isServer) {
+    // Server-side: usa o backend interno do Docker
+    return process.env.API_URL || "http://backend:8080";
+  }
+  
+  // Client-side: detecta automaticamente o host e usa porta 8080
+  if (typeof window !== "undefined") {
+    const protocol = window.location.protocol;
+    const hostname = window.location.hostname;
+    return `${protocol}//${hostname}:8080`;
+  }
+  
+  return "http://localhost:8080";
+};
+
+const apiUrl = getApiUrl();
 
 console.log(`[API] ${isServer ? "Server" : "Client"}-side URL:`, apiUrl);
 
