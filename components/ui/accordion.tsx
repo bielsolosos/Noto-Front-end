@@ -1,58 +1,77 @@
-"use client"
+import type { HTMLAttributes, ReactNode } from "react";
+import { forwardRef, useState } from "react";
 
-import * as React from "react"
-import * as AccordionPrimitive from "@radix-ui/react-accordion"
-import { ChevronDown } from "lucide-react"
+export interface AccordionItemProps {
+  title: string;
+  content: ReactNode;
+  name?: string;
+  defaultOpen?: boolean;
+}
 
-import { cn } from "@/lib/utils"
+export interface AccordionProps extends HTMLAttributes<HTMLDivElement> {
+  items: AccordionItemProps[];
+  allowMultiple?: boolean;
+  variant?: "arrow" | "plus";
+}
 
-const Accordion = AccordionPrimitive.Root
+const Accordion = forwardRef<HTMLDivElement, AccordionProps>(
+  (
+    {
+      items,
+      allowMultiple = false,
+      variant = "arrow",
+      className = "",
+      ...props
+    },
+    ref
+  ) => {
+    const [openItems, setOpenItems] = useState<Set<number>>(
+      new Set(items.filter((item) => item.defaultOpen).map((_, index) => index))
+    );
 
-const AccordionItem = React.forwardRef<
-  React.ElementRef<typeof AccordionPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item>
->(({ className, ...props }, ref) => (
-  <AccordionPrimitive.Item
-    ref={ref}
-    className={cn("border-b", className)}
-    {...props}
-  />
-))
-AccordionItem.displayName = "AccordionItem"
+    const toggleItem = (index: number) => {
+      setOpenItems((prev) => {
+        const newSet = new Set(prev);
+        if (newSet.has(index)) {
+          newSet.delete(index);
+        } else {
+          if (!allowMultiple) {
+            newSet.clear();
+          }
+          newSet.add(index);
+        }
+        return newSet;
+      });
+    };
 
-const AccordionTrigger = React.forwardRef<
-  React.ElementRef<typeof AccordionPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
-  <AccordionPrimitive.Header className="flex">
-    <AccordionPrimitive.Trigger
-      ref={ref}
-      className={cn(
-        "flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline [&[data-state=open]>svg]:rotate-180",
-        className
-      )}
-      {...props}
-    >
-      {children}
-      <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
-    </AccordionPrimitive.Trigger>
-  </AccordionPrimitive.Header>
-))
-AccordionTrigger.displayName = AccordionPrimitive.Trigger.displayName
+    const variantClass =
+      variant === "plus" ? "collapse-plus" : "collapse-arrow";
 
-const AccordionContent = React.forwardRef<
-  React.ElementRef<typeof AccordionPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Content>
->(({ className, children, ...props }, ref) => (
-  <AccordionPrimitive.Content
-    ref={ref}
-    className="overflow-hidden text-sm transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
-    {...props}
-  >
-    <div className={cn("pb-4 pt-0", className)}>{children}</div>
-  </AccordionPrimitive.Content>
-))
+    return (
+      <div ref={ref} className={`${className}`} {...props}>
+        {items.map((item, index) => (
+          <div
+            key={index}
+            className={`collapse ${variantClass} bg-base-200 mb-2 rounded-box`}
+          >
+            <input
+              type={allowMultiple ? "checkbox" : "radio"}
+              name={item.name || "accordion"}
+              checked={openItems.has(index)}
+              onChange={() => toggleItem(index)}
+            />
+            <div className="collapse-title text-xl font-medium">
+              {item.title}
+            </div>
+            <div className="collapse-content">{item.content}</div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+);
 
-AccordionContent.displayName = AccordionPrimitive.Content.displayName
+Accordion.displayName = "Accordion";
 
-export { Accordion, AccordionItem, AccordionTrigger, AccordionContent }
+export { Accordion };
+export default Accordion;

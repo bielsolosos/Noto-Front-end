@@ -1,22 +1,72 @@
-import * as React from "react"
+import type { TextareaHTMLAttributes } from "react";
+import { forwardRef } from "react";
 
-import { cn } from "@/lib/utils"
+export interface TextareaProps
+  extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+  label?: string;
+  helperText?: string;
+  error?: string;
+  variant?: "bordered" | "ghost";
+  textareaSize?: "xs" | "sm" | "md" | "lg";
+}
 
-const Textarea = React.forwardRef<
-  HTMLTextAreaElement,
-  React.ComponentProps<"textarea">
->(({ className, ...props }, ref) => {
-  return (
-    <textarea
-      className={cn(
-        "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-        className
-      )}
-      ref={ref}
-      {...props}
-    />
-  )
-})
-Textarea.displayName = "Textarea"
+const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
+  (
+    {
+      label,
+      helperText,
+      error,
+      variant = "bordered",
+      textareaSize = "md",
+      className = "",
+      ...props
+    },
+    ref
+  ) => {
+    const sizeClasses: Record<string, string> = {
+      xs: "textarea-xs",
+      sm: "textarea-sm",
+      md: "",
+      lg: "textarea-lg",
+    };
 
-export { Textarea }
+    const variantClasses: Record<string, string> = {
+      bordered: "textarea-bordered",
+      ghost: "textarea-ghost",
+    };
+
+    const textareaClasses = [
+      "textarea",
+      variantClasses[variant],
+      sizeClasses[textareaSize],
+      error && "textarea-error",
+      "w-full",
+      className,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    return (
+      <div className="form-control w-full">
+        {label && (
+          <label className="label">
+            <span className="label-text">{label}</span>
+          </label>
+        )}
+        <textarea ref={ref} className={textareaClasses} {...props} />
+        {(helperText || error) && (
+          <label className="label">
+            <span className={`label-text-alt ${error ? "text-error" : ""}`}>
+              {error || helperText}
+            </span>
+          </label>
+        )}
+      </div>
+    );
+  }
+);
+
+Textarea.displayName = "Textarea";
+
+export { Textarea };
+export default Textarea;

@@ -1,16 +1,9 @@
 "use client";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { DropdownItem, DropdownMenu } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotes } from "@/contexts/NotesContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -43,90 +36,77 @@ export function Header() {
     startEditing,
   } = useNotes();
   const isMobile = useMobile();
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
-      <div className="flex h-16 items-center justify-between px-4 md:px-6">
-        <div className="flex items-center gap-3">
-          {/* Mobile Menu Button */}
-          {isMobile && (
-            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-80 p-0">
-                <MobileSidebar onClose={() => setSheetOpen(false)} />
-              </SheetContent>
-            </Sheet>
-          )}
+    <>
+      <header className="navbar fixed top-0 left-0 right-0 z-50 bg-base-100 shadow-sm">
+        <div className="flex-1">
+          <div className="flex items-center gap-3">
+            {/* Mobile Menu Button */}
+            {isMobile && (
+              <label
+                htmlFor="mobile-drawer"
+                className="btn btn-ghost btn-circle drawer-button md:hidden"
+              >
+                <Menu className="h-5 w-5" />
+              </label>
+            )}
 
-          <BookOpen className="h-7 w-7 text-primary" />
-          <h1 className="text-xl font-semibold tracking-tight">Noto</h1>
+            <BookOpen className="h-7 w-7 text-primary" />
+            <h1 className="text-xl font-semibold tracking-tight">Noto</h1>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 md:gap-3">
-          {hasUnsavedChanges && (
-            <Badge
-              variant="secondary"
-              className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 text-xs"
-            >
-              {isMobile ? "•" : "Não salvo"}
-            </Badge>
-          )}
+        <div className="flex-none">
+          <div className="flex items-center gap-2 md:gap-3">
+            {hasUnsavedChanges && (
+              <Badge variant="warning" size="sm">
+                {isMobile ? "•" : "Não salvo"}
+              </Badge>
+            )}
 
-          {isEditing ? (
-            <div className="flex items-center gap-1 md:gap-2">
-              <Button
-                onClick={savePage}
-                disabled={!hasUnsavedChanges}
-                size="sm"
-                className="h-8"
-              >
-                <Save className="h-3 w-3 md:mr-2" />
-                <span className="hidden md:inline">Salvar</span>
-              </Button>
-              <Button
-                variant="outline"
-                onClick={cancelEdit}
-                size="sm"
-                className="h-8"
-              >
-                <X className="h-3 w-3 md:mr-2" />
-                <span className="hidden md:inline">Cancelar</span>
-              </Button>
-            </div>
-          ) : (
-            selectedPage && (
-              <Button onClick={startEditing} size="sm" className="h-8">
-                <Edit3 className="h-3 w-3 md:mr-2" />
-                <span className="hidden md:inline">Editar</span>
-              </Button>
-            )
-          )}
-
-          {/* User Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-                <Avatar className="h-9 w-9">
-                  <AvatarFallback className="bg-primary/10 text-primary">
-                    {user?.username?.charAt(0).toUpperCase() || "U"}
-                  </AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end">
-              <div className="flex items-center justify-start gap-2 p-2">
-                <div className="flex flex-col space-y-1 leading-none">
-                  <p className="font-medium">{user?.username}</p>
-                  <p className="text-xs text-muted-foreground">{user?.email}</p>
-                </div>
+            {isEditing ? (
+              <div className="flex items-center gap-1 md:gap-2">
+                <Button
+                  onClick={savePage}
+                  disabled={!hasUnsavedChanges}
+                  size="sm"
+                  variant="primary"
+                >
+                  <Save className="h-3 w-3 md:mr-2" />
+                  <span className="hidden md:inline">Salvar</span>
+                </Button>
+                <Button variant="ghost" onClick={cancelEdit} size="sm">
+                  <X className="h-3 w-3 md:mr-2" />
+                  <span className="hidden md:inline">Cancelar</span>
+                </Button>
               </div>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={toggleDarkMode}>
+            ) : (
+              selectedPage && (
+                <Button onClick={startEditing} size="sm" variant="primary">
+                  <Edit3 className="h-3 w-3 md:mr-2" />
+                  <span className="hidden md:inline">Editar</span>
+                </Button>
+              )
+            )}
+
+            {/* User Dropdown */}
+            <DropdownMenu
+              trigger={
+                <Avatar
+                  placeholder={user?.username?.charAt(0).toUpperCase() || "U"}
+                  size="md"
+                  shape="circle"
+                />
+              }
+              align="end"
+            >
+              <li className="menu-title">
+                <span>{user?.username}</span>
+                <span className="text-xs opacity-60">{user?.email}</span>
+              </li>
+              <DropdownItem onClick={toggleDarkMode}>
                 {darkMode ? (
                   <>
                     <Sun className="mr-2 h-4 w-4" />
@@ -138,30 +118,51 @@ export function Header() {
                     <span>Modo Escuro</span>
                   </>
                 )}
-              </DropdownMenuItem>
+              </DropdownItem>
               {user?.role_admin && (
-                <DropdownMenuItem asChild>
-                  <Link href="/admin">
+                <DropdownItem>
+                  <Link href="/admin" className="flex items-center">
                     <Shield className="mr-2 h-4 w-4" />
                     <span>Administração</span>
                   </Link>
-                </DropdownMenuItem>
+                </DropdownItem>
               )}
-              <DropdownMenuItem asChild>
-                <Link href="/settings">
+              <DropdownItem>
+                <Link href="/settings" className="flex items-center">
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Configurações</span>
                 </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logout} className="text-red-600">
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Sair</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              </DropdownItem>
+              <li className="divider"></li>
+              <DropdownItem onClick={logout}>
+                <span className="text-error flex items-center">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Sair</span>
+                </span>
+              </DropdownItem>
+            </DropdownMenu>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Mobile Drawer */}
+      {isMobile && (
+        <div className="drawer">
+          <input
+            id="mobile-drawer"
+            type="checkbox"
+            className="drawer-toggle"
+            checked={drawerOpen}
+            onChange={(e) => setDrawerOpen(e.target.checked)}
+          />
+          <div className="drawer-side z-50">
+            <label htmlFor="mobile-drawer" className="drawer-overlay"></label>
+            <div className="w-80 min-h-full bg-base-100">
+              <MobileSidebar onClose={() => setDrawerOpen(false)} />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

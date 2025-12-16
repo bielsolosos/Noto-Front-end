@@ -1,45 +1,80 @@
-"use client"
+import type { InputHTMLAttributes } from "react";
+import { forwardRef } from "react";
 
-import * as React from "react"
-import * as TogglePrimitive from "@radix-ui/react-toggle"
-import { cva, type VariantProps } from "class-variance-authority"
+export interface ToggleProps
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, "size"> {
+  label?: string;
+  labelPosition?: "start" | "end";
+  variant?:
+    | "primary"
+    | "secondary"
+    | "accent"
+    | "success"
+    | "warning"
+    | "error"
+    | "info";
+  toggleSize?: "xs" | "sm" | "md" | "lg";
+}
 
-import { cn } from "@/lib/utils"
-
-const toggleVariants = cva(
-  "inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-muted hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 gap-2",
-  {
-    variants: {
-      variant: {
-        default: "bg-transparent",
-        outline:
-          "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground",
-      },
-      size: {
-        default: "h-10 px-3 min-w-10",
-        sm: "h-9 px-2.5 min-w-9",
-        lg: "h-11 px-5 min-w-11",
-      },
+const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
+  (
+    {
+      label,
+      labelPosition = "end",
+      variant = "primary",
+      toggleSize = "md",
+      className = "",
+      ...props
     },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
+    ref
+  ) => {
+    const variantClasses: Record<string, string> = {
+      primary: "toggle-primary",
+      secondary: "toggle-secondary",
+      accent: "toggle-accent",
+      success: "toggle-success",
+      warning: "toggle-warning",
+      error: "toggle-error",
+      info: "toggle-info",
+    };
+
+    const sizeClasses: Record<string, string> = {
+      xs: "toggle-xs",
+      sm: "toggle-sm",
+      md: "",
+      lg: "toggle-lg",
+    };
+
+    const toggleClasses = [
+      "toggle",
+      variantClasses[variant],
+      sizeClasses[toggleSize],
+      className,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    const toggle = (
+      <input ref={ref} type="checkbox" className={toggleClasses} {...props} />
+    );
+
+    if (!label) {
+      return toggle;
+    }
+
+    return (
+      <label className="label cursor-pointer gap-2">
+        {labelPosition === "start" && (
+          <span className="label-text">{label}</span>
+        )}
+        {toggle}
+        {labelPosition === "end" && <span className="label-text">{label}</span>}
+      </label>
+    );
   }
-)
+);
 
-const Toggle = React.forwardRef<
-  React.ElementRef<typeof TogglePrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof TogglePrimitive.Root> &
-    VariantProps<typeof toggleVariants>
->(({ className, variant, size, ...props }, ref) => (
-  <TogglePrimitive.Root
-    ref={ref}
-    className={cn(toggleVariants({ variant, size, className }))}
-    {...props}
-  />
-))
+Toggle.displayName = "Toggle";
 
-Toggle.displayName = TogglePrimitive.Root.displayName
-
-export { Toggle, toggleVariants }
+export { Toggle };
+export default Toggle;

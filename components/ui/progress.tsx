@@ -1,28 +1,51 @@
-"use client"
+import type { HTMLAttributes } from "react";
+import { forwardRef } from "react";
 
-import * as React from "react"
-import * as ProgressPrimitive from "@radix-ui/react-progress"
+export interface ProgressProps extends HTMLAttributes<HTMLProgressElement> {
+  value?: number;
+  max?: number;
+  variant?:
+    | "primary"
+    | "secondary"
+    | "accent"
+    | "info"
+    | "success"
+    | "warning"
+    | "error";
+}
 
-import { cn } from "@/lib/utils"
+const Progress = forwardRef<HTMLProgressElement, ProgressProps>(
+  (
+    { value, max = 100, variant = "primary", className = "", ...props },
+    ref
+  ) => {
+    const variantClasses: Record<string, string> = {
+      primary: "progress-primary",
+      secondary: "progress-secondary",
+      accent: "progress-accent",
+      info: "progress-info",
+      success: "progress-success",
+      warning: "progress-warning",
+      error: "progress-error",
+    };
 
-const Progress = React.forwardRef<
-  React.ElementRef<typeof ProgressPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>
->(({ className, value, ...props }, ref) => (
-  <ProgressPrimitive.Root
-    ref={ref}
-    className={cn(
-      "relative h-4 w-full overflow-hidden rounded-full bg-secondary",
-      className
-    )}
-    {...props}
-  >
-    <ProgressPrimitive.Indicator
-      className="h-full w-full flex-1 bg-primary transition-all"
-      style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
-    />
-  </ProgressPrimitive.Root>
-))
-Progress.displayName = ProgressPrimitive.Root.displayName
+    const classes = ["progress", variantClasses[variant], "w-full", className]
+      .filter(Boolean)
+      .join(" ");
 
-export { Progress }
+    return (
+      <progress
+        ref={ref}
+        className={classes}
+        value={value}
+        max={max}
+        {...props}
+      />
+    );
+  }
+);
+
+Progress.displayName = "Progress";
+
+export { Progress };
+export default Progress;

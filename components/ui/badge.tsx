@@ -1,29 +1,71 @@
-import type * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
+import type { HTMLAttributes } from "react";
+import { forwardRef } from "react";
 
-import { cn } from "@/lib/utils"
-
-const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-  {
-    variants: {
-      variant: {
-        default: "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
-        secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        destructive: "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
-        outline: "text-foreground",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-    },
-  },
-)
-
-export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof badgeVariants> {}
-
-function Badge({ className, variant, ...props }: BadgeProps) {
-  return <div className={cn(badgeVariants({ variant }), className)} {...props} />
+export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
+  variant?:
+    | "primary"
+    | "secondary"
+    | "accent"
+    | "neutral"
+    | "ghost"
+    | "info"
+    | "success"
+    | "warning"
+    | "error";
+  size?: "xs" | "sm" | "md" | "lg";
+  outline?: boolean;
 }
 
-export { Badge, badgeVariants }
+const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
+  (
+    {
+      variant = "primary",
+      size = "md",
+      outline = false,
+      className = "",
+      children,
+      ...props
+    },
+    ref
+  ) => {
+    const variantClasses: Record<string, string> = {
+      primary: "badge-primary",
+      secondary: "badge-secondary",
+      accent: "badge-accent",
+      neutral: "badge-neutral",
+      ghost: "badge-ghost",
+      info: "badge-info",
+      success: "badge-success",
+      warning: "badge-warning",
+      error: "badge-error",
+    };
+
+    const sizeClasses: Record<string, string> = {
+      xs: "badge-xs",
+      sm: "badge-sm",
+      md: "",
+      lg: "badge-lg",
+    };
+
+    const classes = [
+      "badge",
+      variantClasses[variant],
+      sizeClasses[size],
+      outline && "badge-outline",
+      className,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    return (
+      <span ref={ref} className={classes} {...props}>
+        {children}
+      </span>
+    );
+  }
+);
+
+Badge.displayName = "Badge";
+
+export { Badge };
+export default Badge;

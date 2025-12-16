@@ -59,6 +59,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isInitialized) return;
 
+    const theme = darkMode ? "bielDark" : "bielLight";
+
+    // DaisyUI theme
+    document.documentElement.setAttribute("data-theme", theme);
+
+    // Dark mode class for compatibility
     if (darkMode) {
       document.documentElement.classList.add("dark");
     } else {
@@ -67,6 +73,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     // Salvar preferência no localStorage
     localStorage.setItem("noto-theme", darkMode ? "dark" : "light");
+    localStorage.setItem("theme", theme);
   }, [darkMode, isInitialized]);
 
   const toggleDarkMode = () => {

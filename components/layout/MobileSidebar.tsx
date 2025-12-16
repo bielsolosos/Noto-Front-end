@@ -3,7 +3,6 @@
 import { PageList } from "@/components/pages/PageList";
 import { PageListSkeleton } from "@/components/skeletons/PageListSkeleton";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useNotes } from "@/contexts/NotesContext";
 import { Plus } from "lucide-react";
 
@@ -36,7 +35,7 @@ export function MobileSidebar({ onClose }: MobileSidebarProps) {
         </div>
       </div>
 
-      <ScrollArea className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto">
         <div className="p-3">
           {isLoadingList ? (
             <PageListSkeleton />
@@ -44,7 +43,7 @@ export function MobileSidebar({ onClose }: MobileSidebarProps) {
             <PageList onPageSelect={onClose} />
           )}
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 }

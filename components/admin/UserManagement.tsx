@@ -1,37 +1,13 @@
 "use client";
 
 import { UserForm } from "@/components/admin/UserForm";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Card } from "@/components/ui/card";
+import { Dialog } from "@/components/ui/dialog";
+import { Loading } from "@/components/ui/loading";
 import api from "@/lib/api";
-import { Trash2, UserPlus, Shield, ShieldOff } from "lucide-react";
+import { Shield, ShieldOff, Trash2, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -93,119 +69,124 @@ export function UserManagement() {
     toast.success("Usuário criado com sucesso");
   };
 
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
+
   if (loading) {
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Carregando usuários...
-            </p>
-          </div>
-        </CardContent>
+      <Card className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <Loading size="lg" />
+          <p className="mt-2 text-sm">Carregando usuários...</p>
+        </div>
       </Card>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>Gerenciamento de Usuários</CardTitle>
-          <Dialog open={showCreateForm} onOpenChange={setShowCreateForm}>
-            <DialogTrigger asChild>
-              <Button>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Novo Usuário
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Criar Novo Usuário</DialogTitle>
-              </DialogHeader>
-              <UserForm onSuccess={handleUserCreated} />
-            </DialogContent>
-          </Dialog>
+    <>
+      <Card
+        title="Gerenciamento de Usuários"
+        actions={
+          <Button onClick={() => setShowCreateForm(true)}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            Novo Usuário
+          </Button>
+        }
+      >
+        <div className="overflow-x-auto">
+          <table className="table table-zebra w-full">
+            <thead>
+              <tr>
+                <th>Nome de Usuário</th>
+                <th>Email</th>
+                <th>Permissões</th>
+                <th className="text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id}>
+                  <td className="font-medium">{user.username}</td>
+                  <td>{user.email}</td>
+                  <td>
+                    <Badge variant={user.role_admin ? "primary" : "secondary"}>
+                      {user.role_admin ? "Administrador" : "Usuário"}
+                    </Badge>
+                  </td>
+                  <td className="text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          handleToggleAdmin(user.id, user.role_admin)
+                        }
+                      >
+                        {user.role_admin ? (
+                          <ShieldOff className="h-3 w-3" />
+                        ) : (
+                          <Shield className="h-3 w-3" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="error"
+                        size="sm"
+                        onClick={() => setUserToDelete(user)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {users.length === 0 && (
+            <div className="text-center py-8">
+              <p>Nenhum usuário encontrado</p>
+            </div>
+          )}
         </div>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Nome de Usuário</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Permissões</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell className="font-medium">{user.username}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>
-                  <Badge variant={user.role_admin ? "default" : "secondary"}>
-                    {user.role_admin ? "Administrador" : "Usuário"}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-2">
-                    {/* Toggle Admin */}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleToggleAdmin(user.id, user.role_admin)}
-                    >
-                      {user.role_admin ? (
-                        <ShieldOff className="h-3 w-3" />
-                      ) : (
-                        <Shield className="h-3 w-3" />
-                      )}
-                    </Button>
+      </Card>
 
-                    {/* Delete User */}
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            Confirmar Exclusão
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Tem certeza que deseja deletar o usuário{" "}
-                            <strong>{user.username}</strong>? Esta ação não pode
-                            ser desfeita.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDeleteUser(user.id)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Deletar
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+      {/* Create User Dialog */}
+      <Dialog
+        open={showCreateForm}
+        onClose={() => setShowCreateForm(false)}
+        title="Criar Novo Usuário"
+      >
+        <UserForm onSuccess={handleUserCreated} />
+      </Dialog>
 
-        {users.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">Nenhum usuário encontrado</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={!!userToDelete}
+        onClose={() => setUserToDelete(null)}
+        title="Confirmar Exclusão"
+        actions={
+          <>
+            <Button variant="ghost" onClick={() => setUserToDelete(null)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="error"
+              onClick={() => {
+                if (userToDelete) {
+                  handleDeleteUser(userToDelete.id);
+                  setUserToDelete(null);
+                }
+              }}
+            >
+              Deletar
+            </Button>
+          </>
+        }
+      >
+        Tem certeza que deseja deletar o usuário{" "}
+        <strong>{userToDelete?.username}</strong>? Esta ação não pode ser
+        desfeita.
+      </Dialog>
+    </>
   );
 }

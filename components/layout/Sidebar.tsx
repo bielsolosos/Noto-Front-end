@@ -3,7 +3,6 @@
 import { PageList } from "@/components/pages/PageList";
 import { PageListSkeleton } from "@/components/skeletons/PageListSkeleton";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useNotes } from "@/contexts/NotesContext";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { cn } from "@/lib/utils";
@@ -67,11 +66,11 @@ export function Sidebar() {
 
       {/* Conteúdo da sidebar */}
       {!isCollapsed && (
-        <ScrollArea className="h-[calc(100vh-9rem)] overflow-y-auto">
+        <div className="h-[calc(100vh-9rem)] overflow-y-auto">
           <div className="p-3">
             {isLoadingList ? <PageListSkeleton /> : <PageList />}
           </div>
-        </ScrollArea>
+        </div>
       )}
     </aside>
   );

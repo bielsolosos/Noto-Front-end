@@ -1,94 +1,89 @@
 /** @type {import('tailwindcss').Config} */
-const plugin = require("tailwindcss/plugin");
-
-module.exports = {
-  darkMode: ["class"],
+const config = {
+  darkMode: ["class", '[data-theme="dark"]'],
   content: [
-    "./pages/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-    "./app/**/*.{ts,tsx}",
-    "./src/**/*.{ts,tsx}",
-    "*.{js,ts,jsx,tsx,mdx}",
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  prefix: "",
   theme: {
-    container: {
-      center: true,
-      padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
-    },
-    extend: {
-      colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        tertiary: {
-          DEFAULT: "hsl(var(--tertiary))",
-          foreground: "hsl(var(--tertiary-foreground))",
-        },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
-      },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-      },
-      keyframes: {
-        "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
-        },
-        "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
-        },
-      },
-      animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
-      },
-    },
+    extend: {},
   },
-  plugins: [
-    require("tailwindcss-animate"),
-    plugin(function ({ addBase, theme }) {
-      addBase({
-        body: {
-          backgroundColor: theme("colors.background"),
-          color: theme("colors.foreground"),
+  plugins: [require("daisyui")],
+  daisyui: {
+    themes: [
+      {
+        bielLight: {
+          primary: "#e61558",
+          "primary-content": "#fafafa",
+          secondary: "#f7aec8",
+          "secondary-content": "#3d1a29",
+          accent: "#f5f5f5",
+          "accent-content": "#1a1a1a",
+          neutral: "#0a0a0a",
+          "neutral-content": "#fafafa",
+          "base-100": "#ffffff",
+          "base-200": "#f5f5f5",
+          "base-300": "#e5e5e5",
+          "base-content": "#0a0a0a",
+          info: "#5097fb",
+          "info-content": "#fafafa",
+          success: "#16a34a",
+          "success-content": "#fafafa",
+          warning: "#f59e0b",
+          "warning-content": "#fafafa",
+          error: "#f05a67",
+          "error-content": "#fafafa",
+          "--rounded-box": "0.5rem",
+          "--rounded-btn": "0.5rem",
+          "--rounded-badge": "1.9rem",
+          "--animation-btn": "0.25s",
+          "--animation-input": "0.2s",
+          "--btn-focus-scale": "0.95",
+          "--border-btn": "1px",
+          "--tab-border": "1px",
+          "--tab-radius": "0.5rem",
         },
-      });
-    }),
-  ],
+        bielDark: {
+          primary: "#f06292",
+          "primary-content": "#fafafa",
+          secondary: "#6b2843",
+          "secondary-content": "#fafafa",
+          accent: "#262626",
+          "accent-content": "#fafafa",
+          neutral: "#fafafa",
+          "neutral-content": "#0a0a0a",
+          "base-100": "#0a0a0a",
+          "base-200": "#262626",
+          "base-300": "#333333",
+          "base-content": "#fafafa",
+          info: "#5097fb",
+          "info-content": "#fafafa",
+          success: "#16a34a",
+          "success-content": "#fafafa",
+          warning: "#f59e0b",
+          "warning-content": "#fafafa",
+          error: "#f05a67",
+          "error-content": "#fafafa",
+          "--rounded-box": "0.5rem",
+          "--rounded-btn": "0.5rem",
+          "--rounded-badge": "1.9rem",
+          "--animation-btn": "0.25s",
+          "--animation-input": "0.2s",
+          "--btn-focus-scale": "0.95",
+          "--border-btn": "1px",
+          "--tab-border": "1px",
+          "--tab-radius": "0.5rem",
+        },
+      },
+    ],
+    darkTheme: "bielDark",
+    base: true,
+    styled: true,
+    utils: true,
+    logs: true,
+  },
 };
+
+module.exports = config;

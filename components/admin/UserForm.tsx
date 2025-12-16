@@ -2,8 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { Toggle } from "@/components/ui/toggle";
 import api from "@/lib/api";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -47,61 +46,49 @@ export function UserForm({ onSuccess }: UserFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="username">Nome de Usuário</Label>
-        <Input
-          id="username"
-          type="text"
-          value={formData.username}
-          onChange={(e) =>
-            setFormData({ ...formData, username: e.target.value })
-          }
-          placeholder="Digite o nome de usuário"
-          required
-        />
-      </div>
+      <Input
+        label="Nome de Usuário"
+        id="username"
+        type="text"
+        value={formData.username}
+        onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+        placeholder="Digite o nome de usuário"
+        required
+      />
 
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          placeholder="Digite o email"
-          required
-        />
-      </div>
+      <Input
+        label="Email"
+        id="email"
+        type="email"
+        value={formData.email}
+        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+        placeholder="Digite o email"
+        required
+      />
 
-      <div className="space-y-2">
-        <Label htmlFor="apiKey">API Key</Label>
-        <Input
-          id="apiKey"
-          type="password"
-          value={formData.apiKey}
-          onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
-          placeholder="Digite a API key para criação"
-          required
-        />
-        <p className="text-xs text-muted-foreground">
-          API key necessária para criar novos usuários
-        </p>
-      </div>
+      <Input
+        label="API Key"
+        id="apiKey"
+        type="password"
+        value={formData.apiKey}
+        onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
+        placeholder="Digite a API key para criação"
+        helperText="API key necessária para criar novos usuários"
+        required
+      />
 
-      <div className="flex items-center space-x-2">
-        <Switch
-          id="admin-role"
-          checked={formData.role_admin}
-          onCheckedChange={(checked) =>
-            setFormData({ ...formData, role_admin: checked })
-          }
-        />
-        <Label htmlFor="admin-role">Administrador</Label>
-      </div>
+      <Toggle
+        id="admin-role"
+        label="Administrador"
+        checked={formData.role_admin}
+        onChange={(e) =>
+          setFormData({ ...formData, role_admin: e.target.checked })
+        }
+      />
 
       <div className="flex justify-end space-x-2 pt-4">
-        <Button type="submit" disabled={loading}>
-          {loading ? "Criando..." : "Criar Usuário"}
+        <Button type="submit" disabled={loading} loading={loading}>
+          Criar Usuário
         </Button>
       </div>
     </form>

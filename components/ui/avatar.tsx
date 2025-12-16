@@ -1,50 +1,101 @@
-"use client"
+import type { HTMLAttributes } from "react";
+import { forwardRef } from "react";
 
-import * as React from "react"
-import * as AvatarPrimitive from "@radix-ui/react-avatar"
+export interface AvatarProps extends HTMLAttributes<HTMLDivElement> {
+  src?: string;
+  alt?: string;
+  placeholder?: string;
+  size?: "xs" | "sm" | "md" | "lg";
+  shape?: "circle" | "rounded" | "squircle";
+  online?: boolean;
+  offline?: boolean;
+  ring?: boolean;
+  ringColor?:
+    | "primary"
+    | "secondary"
+    | "accent"
+    | "success"
+    | "warning"
+    | "error";
+}
 
-import { cn } from "@/lib/utils"
+const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
+  (
+    {
+      src,
+      alt = "",
+      placeholder,
+      size = "md",
+      shape = "circle",
+      online = false,
+      offline = false,
+      ring = false,
+      ringColor = "primary",
+      className = "",
+      ...props
+    },
+    ref
+  ) => {
+    const sizeClasses: Record<string, string> = {
+      xs: "w-8",
+      sm: "w-12",
+      md: "w-16",
+      lg: "w-24",
+    };
 
-const Avatar = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>
->(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Root
-    ref={ref}
-    className={cn(
-      "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
-      className
-    )}
-    {...props}
-  />
-))
-Avatar.displayName = AvatarPrimitive.Root.displayName
+    const shapeClasses: Record<string, string> = {
+      circle: "rounded-full",
+      rounded: "rounded-xl",
+      squircle: "mask mask-squircle",
+    };
 
-const AvatarImage = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Image>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
->(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Image
-    ref={ref}
-    className={cn("aspect-square h-full w-full", className)}
-    {...props}
-  />
-))
-AvatarImage.displayName = AvatarPrimitive.Image.displayName
+    const ringColorClasses: Record<string, string> = {
+      primary: "ring-primary",
+      secondary: "ring-secondary",
+      accent: "ring-accent",
+      success: "ring-success",
+      warning: "ring-warning",
+      error: "ring-error",
+    };
 
-const AvatarFallback = React.forwardRef<
-  React.ElementRef<typeof AvatarPrimitive.Fallback>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>
->(({ className, ...props }, ref) => (
-  <AvatarPrimitive.Fallback
-    ref={ref}
-    className={cn(
-      "flex h-full w-full items-center justify-center rounded-full bg-muted",
-      className
-    )}
-    {...props}
-  />
-))
-AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName
+    const statusClass = online ? "online" : offline ? "offline" : "";
 
-export { Avatar, AvatarImage, AvatarFallback }
+    const containerClasses = [
+      "avatar",
+      statusClass,
+      placeholder && !src ? "placeholder" : "",
+      className,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    const avatarClasses = [
+      sizeClasses[size],
+      shape !== "squircle" ? shapeClasses[shape] : "",
+      shape === "squircle" ? shapeClasses[shape] : "",
+      ring &&
+        `ring ring-offset-base-100 ring-offset-2 ${ringColorClasses[ringColor]}`,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    return (
+      <div ref={ref} className={containerClasses} {...props}>
+        {src ? (
+          <div className={avatarClasses}>
+            <img src={src} alt={alt} />
+          </div>
+        ) : placeholder ? (
+          <div className={`bg-neutral text-neutral-content ${avatarClasses}`}>
+            <span className="text-xl">{placeholder}</span>
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+);
+
+Avatar.displayName = "Avatar";
+
+export { Avatar };
+export default Avatar;

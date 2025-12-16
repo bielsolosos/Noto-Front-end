@@ -45,9 +45,9 @@ export function PageList({ onPageSelect }: PageListProps) {
       {pageSummaries.map((page) => (
         <div
           key={page.id}
-          className={`group relative rounded-lg p-3 cursor-pointer transition-all duration-200 hover:bg-accent/80 ${
+          className={`group relative rounded-lg p-3 cursor-pointer transition-all duration-200 hover:bg-base-200 ${
             selectedPageId === page.id
-              ? "bg-accent border border-primary/20 shadow-sm"
+              ? "bg-base-200 border border-primary/20 shadow-sm"
               : "hover:shadow-sm"
           }`}
           onClick={() => handlePageSelect(page.id)}
@@ -62,7 +62,7 @@ export function PageList({ onPageSelect }: PageListProps) {
               >
                 {page.title}
               </h3>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs opacity-60">
                 {new Date(page.updatedAt).toLocaleString("pt-BR", {
                   day: "2-digit",
                   month: "2-digit",
@@ -77,8 +77,8 @@ export function PageList({ onPageSelect }: PageListProps) {
             <div className="flex-shrink-0">
               <Button
                 variant="ghost"
-                size="icon"
-                className="h-7 w-7 opacity-60 hover:opacity-100 hover:bg-destructive/10 hover:text-destructive transition-all"
+                size="xs"
+                className="opacity-60 hover:opacity-100 hover:text-error transition-all"
                 onClick={(e) => handleDeletePage(e, page.id)}
                 title="Excluir entrada"
               >
