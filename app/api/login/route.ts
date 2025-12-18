@@ -8,9 +8,6 @@ export async function POST(request: NextRequest) {
   const apiKey =
     process.env.AUTH_API_KEY || process.env.API_KEY || "batatinha123";
 
-  console.log("[Login Route] API URL:", apiUrl);
-  console.log("[Login Route] API Key:", apiKey ? "✓" : "✗");
-
   const res = await fetch(`${apiUrl}/auth`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

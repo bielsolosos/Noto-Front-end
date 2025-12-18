@@ -6,8 +6,6 @@ const isServer = typeof window === "undefined";
 
 const apiUrl = process.env.API_URL || "http://localhost:8080";
 
-console.log(`[API] ${isServer ? "Server" : "Client"}-side URL:`, apiUrl);
-
 const api = axios.create({
   baseURL: apiUrl,
 });

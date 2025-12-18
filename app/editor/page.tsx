@@ -17,6 +17,7 @@ function EditorContent() {
 
 export default function HomePage() {
   return (
+    // TODO trocar por um loading bonito
     <Suspense fallback={<div>Carregando...</div>}>
       <EditorContent />
     </Suspense>

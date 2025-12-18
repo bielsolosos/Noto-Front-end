@@ -4,6 +4,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { parseMarkdown } from "@/lib/markdownParser";
 import {
   ArrowRight,
+  BookOpen,
   Edit3,
   Lock,
   Moon,
@@ -54,7 +55,7 @@ export default function LandingPage() {
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
-      {/* Background estático */}
+      {/* Background estático (AI MADE)*/}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-primary/5" />
         <div className="absolute top-0 left-0 w-full h-full">
@@ -74,11 +75,7 @@ export default function LandingPage() {
       <header className="relative z-10 p-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
-              <span className="text-lg font-bold text-primary-foreground">
-                N
-              </span>
-            </div>
+            <BookOpen className="h-7 w-7 text-primary" />
             <span className="text-xl font-bold">NOTO</span>
           </div>
 
