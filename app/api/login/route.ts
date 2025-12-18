@@ -1,17 +1,13 @@
+import { env } from "@/lib/env";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   const { email, password } = await request.json();
 
-  // No servidor Next.js, usar o nome do container na rede Docker
-  const apiUrl = "http://backend:8080";
-  const apiKey =
-    process.env.AUTH_API_KEY || process.env.API_KEY || "batatinha123";
-
-  const res = await fetch(`${apiUrl}/auth`, {
+  const res = await fetch(`${env.AUTH_API_URL}/auth`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password, apiKey }),
+    body: JSON.stringify({ email, password, apiKey: env.AUTH_API_KEY }),
   });
 
   if (!res.ok) {

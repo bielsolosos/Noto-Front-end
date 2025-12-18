@@ -1,9 +1,10 @@
 "use client";
 
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useNotes } from "@/contexts/NotesContext";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useEffect } from "react";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 export function useKeyboardShortcuts() {
   const {
@@ -16,6 +17,7 @@ export function useKeyboardShortcuts() {
   } = useNotes();
 
   const { toggleSidebar } = useSidebar();
+  const { confirm, ConfirmDialog } = useConfirmDialog();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -32,13 +34,20 @@ export function useKeyboardShortcuts() {
       if (e.key === "Escape") {
         if (isEditing) {
           if (hasUnsavedChanges) {
-            if (confirm("Você tem alterações não salvas. Deseja descartar?")) {
-              cancelEdit();
-              toast("Edição cancelada", { icon: "ℹ️" });
-            }
+            confirm({
+              title: "Descartar alterações?",
+              description: "Você tem alterações não salvas. Deseja descartar?",
+              confirmText: "Descartar",
+              cancelText: "Continuar editando",
+            }).then((confirmed) => {
+              if (confirmed) {
+                cancelEdit();
+                toast("Edição cancelada");
+              }
+            });
           } else {
             cancelEdit();
-            toast("Edição cancelada", { icon: "ℹ️" });
+            toast("Edição cancelada");
           }
         }
       }
@@ -48,7 +57,7 @@ export function useKeyboardShortcuts() {
         e.preventDefault();
         if (!isEditing) {
           startEditing();
-          toast("Modo de edição ativado", { icon: "✏️" });
+          toast("Modo de edição ativado");
         }
       }
 
@@ -59,10 +68,10 @@ export function useKeyboardShortcuts() {
       }
 
       // Ctrl+B: Toggle sidebar
-      if (e.ctrlKey && e.key === "b") {
+      if (e.ctrlKey && e.key === "q") {
         e.preventDefault();
         toggleSidebar();
-        toast("Sidebar alternada", { icon: "📱" });
+        toast("Sidebar alternada");
       }
     };
 
@@ -76,5 +85,8 @@ export function useKeyboardShortcuts() {
     startEditing,
     createNewPage,
     toggleSidebar,
+    confirm,
   ]);
+
+  return { ConfirmDialog };
 }

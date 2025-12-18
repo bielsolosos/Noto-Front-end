@@ -1,5 +1,6 @@
 "use client";
 
+import { LoadingSpinner } from "@/components/layout/LoadingSpinner";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { NotesProvider } from "@/contexts/NotesContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
@@ -17,8 +18,7 @@ function EditorContent() {
 
 export default function HomePage() {
   return (
-    // TODO trocar por um loading bonito
-    <Suspense fallback={<div>Carregando...</div>}>
+    <Suspense fallback={<LoadingSpinner />}>
       <EditorContent />
     </Suspense>
   );

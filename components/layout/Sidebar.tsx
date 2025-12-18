@@ -29,18 +29,6 @@ export function Sidebar() {
       >
         {!isCollapsed ? (
           <>
-            {/* Botão Novo à esquerda */}
-            <Button
-              onClick={createNewPage}
-              size="sm"
-              className="px-3 py-2"
-              disabled={isCreating}
-            >
-              <Plus className="mr-1 h-4 w-4" />
-              {isCreating ? "Criando..." : "Novo"}
-            </Button>
-
-            {/* Botão toggle à direita */}
             <Button
               variant="ghost"
               size="sm"
@@ -49,6 +37,16 @@ export function Sidebar() {
               title="Recolher sidebar"
             >
               <ChevronLeft className="h-4 w-4" />
+            </Button>
+
+            <Button
+              onClick={createNewPage}
+              size="sm"
+              className="px-3 py-2"
+              disabled={isCreating}
+            >
+              <Plus className="mr-1 h-4 w-4" />
+              {isCreating ? "Criando..." : "Novo"}
             </Button>
           </>
         ) : (

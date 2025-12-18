@@ -3,9 +3,19 @@
 import { ContentSkeleton } from "@/components/skeletons/ContentSkeleton";
 import { useNotes } from "@/contexts/NotesContext";
 import { parseMarkdown } from "@/lib/markdownParser";
+import DOMPurify from "dompurify";
+import { useMemo } from "react";
 
 export function NoteViewer() {
   const { selectedPage, isLoadingPage } = useNotes();
+
+  const sanitizedContent = useMemo(() => {
+    if (!selectedPage?.content) {
+      return "<p class='text-muted-foreground italic'>Esta entrada está vazia. Clique em 'Editar' para começar a escrever.</p>";
+    }
+    const parsed = parseMarkdown(selectedPage.content);
+    return DOMPurify.sanitize(parsed);
+  }, [selectedPage?.content]);
 
   if (isLoadingPage) {
     return <ContentSkeleton />;
@@ -34,11 +44,7 @@ export function NoteViewer() {
 
         <div
           className="prose prose-sm md:prose prose-neutral dark:prose-invert max-w-none"
-          dangerouslySetInnerHTML={{
-            __html: selectedPage.content
-              ? parseMarkdown(selectedPage.content)
-              : "<p class='text-muted-foreground italic'>Esta entrada está vazia. Clique em 'Editar' para começar a escrever.</p>",
-          }}
+          dangerouslySetInnerHTML={{ __html: sanitizedContent }}
         />
       </div>
     </div>

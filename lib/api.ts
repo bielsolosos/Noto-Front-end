@@ -1,5 +1,5 @@
 import axios from "axios";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 // Detectar se está no servidor ou no cliente
 const isServer = typeof window === "undefined";

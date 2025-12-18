@@ -10,7 +10,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 interface NotesContextType {
   // Lista resumida para sidebar

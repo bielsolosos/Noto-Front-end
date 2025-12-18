@@ -14,17 +14,14 @@ import {
   Zap,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 
 export default function LandingPage() {
   const { darkMode, toggleDarkMode } = useTheme();
+  const demoRef = useRef<HTMLElement>(null);
   const [demoContent, setDemoContent] = useState(
     '# Bem-vindo ao NOTO\n\n**Organize** suas *ideias* de forma `simples` e eficiente.\n\n- [x] Editor intuitivo\n- [x] Markdown em tempo real\n- [ ] Suas próximas grandes ideias\n\n> "A simplicidade é a sofisticação suprema" - Leonardo da Vinci'
   );
-
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", darkMode);
-  }, [darkMode]);
 
   const features = [
     {
@@ -134,9 +131,7 @@ export default function LandingPage() {
 
             <button
               onClick={() =>
-                document
-                  .getElementById("demo")
-                  ?.scrollIntoView({ behavior: "smooth" })
+                demoRef.current?.scrollIntoView({ behavior: "smooth" })
               }
               className="inline-flex items-center gap-2 text-primary hover:bg-primary/10 px-8 py-4 rounded-xl text-lg font-semibold transition-colors duration-200"
             >
@@ -179,7 +174,7 @@ export default function LandingPage() {
       </section>
 
       {/* Demo Section */}
-      <section id="demo" className="relative z-10 py-24 px-6">
+      <section ref={demoRef} className="relative z-10 py-24 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -215,7 +210,7 @@ export default function LandingPage() {
                 />
               </div>
 
-              {/* Preview lado direito */}
+              {/* Preview lado direito  TODO: ver esse dangerouslySetInnerHTML */}
               <div className="border-l border-border">
                 <div className="w-full h-full p-6 overflow-y-auto">
                   <div
@@ -278,11 +273,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
-                <span className="text-sm font-bold text-primary-foreground">
-                  N
-                </span>
-              </div>
+              <BookOpen className="h-7 w-7 text-primary" />
               <span className="font-semibold">NOTO</span>
             </div>
 

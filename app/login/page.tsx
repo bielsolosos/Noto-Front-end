@@ -3,9 +3,10 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Moon, Sun } from "lucide-react";
-import { useEffect, useState } from "react";
+import { BookOpen, Eye, EyeOff, Moon, Sun } from "lucide-react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 export default function LoginScreen() {
@@ -14,7 +15,7 @@ export default function LoginScreen() {
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
-  password: z.string().min(8, "A senha deve ter no mínimo 8 caracteres"),
+  password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -30,17 +31,13 @@ function LoginContent() {
     formState: { errors },
   } = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) });
 
-  useEffect(() => {
-    document.documentElement.classList.toggle("dark", darkMode);
-  }, [darkMode]);
-
-  const onSubmit = async (data: LoginFormData) => {
+  async function onSubmit(data: LoginFormData) {
     try {
       await login(data.email, data.password);
     } catch (error) {
-      alert("Login falhou");
+      toast.error("Erro ao fazer login");
     }
-  };
+  }
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
@@ -75,12 +72,9 @@ function LoginContent() {
           }}
         >
           <div className="flex flex-col items-center mb-8">
-            <div className="w-16 h-16 mb-4 rounded-2xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
-              <span className="text-2xl font-bold text-primary-foreground">
-                N
-              </span>
+            <div className="w-16 h-16 mb-4 rounded-2xl bg-gradient-to-br from-secondary to-primary/20 flex items-center justify-center">
+              <BookOpen className="h-7 w-7 text-primary" />
             </div>
-            <h2 className="text-3xl font-bold">NOTO</h2>
             <p className="text-sm text-muted-foreground mt-2">
               Faça login para continuar
             </p>
@@ -163,11 +157,7 @@ function LoginContent() {
 
             <button
               type="submit"
-              className="w-full py-3 rounded-lg font-medium relative overflow-hidden transition-all duration-200"
-              style={{
-                backgroundColor: "hsl(var(--primary))",
-                color: "hsl(var(--primary-foreground))",
-              }}
+              className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-medium relative overflow-hidden transition-all duration-200"
             >
               <span className="relative z-10">Entrar</span>
               <div
@@ -183,6 +173,7 @@ function LoginContent() {
           </form>
 
           {/* Seção de ajuda */}
+          {/* TODO Criar feature-flag de se registrar fora do app */}
           <div className="mt-6 pt-6 border-t border-border/50">
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-3">

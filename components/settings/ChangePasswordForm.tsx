@@ -1,8 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -10,60 +8,57 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useState } from "react";
-import toast from "react-hot-toast";
-import api from "@/lib/api";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
+import api from "@/lib/api";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+
+const changePasswordSchema = z
+  .object({
+    oldPassword: z.string().min(1, "Senha atual é obrigatória"),
+    newPassword: z
+      .string()
+      .min(6, "A nova senha deve ter pelo menos 6 caracteres"),
+    confirmPassword: z.string().min(1, "Confirmação de senha é obrigatória"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "As senhas não coincidem",
+    path: ["confirmPassword"],
+  });
+
+type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
 
 export function ChangePasswordForm() {
-  const { user } = useAuth();
-  const [formData, setFormData] = useState({
-    oldPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
+  const { user, logout } = useAuth();
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ChangePasswordFormData>({
+    resolver: zodResolver(changePasswordSchema),
+  });
 
-    if (!formData.oldPassword.trim()) {
-      toast.error("Senha atual é obrigatória");
-      return;
-    }
-
-    if (!formData.newPassword.trim()) {
-      toast.error("Nova senha é obrigatória");
-      return;
-    }
-
-    if (formData.newPassword.length < 6) {
-      toast.error("A nova senha deve ter pelo menos 6 caracteres");
-      return;
-    }
-
-    if (formData.newPassword !== formData.confirmPassword) {
-      toast.error("As senhas não coincidem");
-      return;
-    }
-
+  const onSubmit = async (data: ChangePasswordFormData) => {
     try {
       setLoading(true);
       await api.post(`/users/change-password/${user?.id}`, {
-        oldPassword: formData.oldPassword,
-        newPassword: formData.newPassword,
+        oldPassword: data.oldPassword,
+        newPassword: data.newPassword,
       });
-      
+
       toast.success("Senha alterada com sucesso!");
-      setFormData({
-        oldPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
+      logout();
+      reset();
     } catch (error: any) {
-      toast.error(
-        error.response?.data?.message || "Erro ao alterar senha"
-      );
+      toast.error(error.response?.data?.message || "Erro ao alterar senha");
     } finally {
       setLoading(false);
     }
@@ -78,19 +73,20 @@ export function ChangePasswordForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="oldPassword">Senha Atual</Label>
             <Input
               id="oldPassword"
               type="password"
-              value={formData.oldPassword}
-              onChange={(e) =>
-                setFormData({ ...formData, oldPassword: e.target.value })
-              }
+              {...register("oldPassword")}
               placeholder="Digite sua senha atual"
-              required
             />
+            {errors.oldPassword && (
+              <p className="text-sm text-destructive">
+                {errors.oldPassword.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -98,13 +94,14 @@ export function ChangePasswordForm() {
             <Input
               id="newPassword"
               type="password"
-              value={formData.newPassword}
-              onChange={(e) =>
-                setFormData({ ...formData, newPassword: e.target.value })
-              }
+              {...register("newPassword")}
               placeholder="Digite a nova senha"
-              required
             />
+            {errors.newPassword && (
+              <p className="text-sm text-destructive">
+                {errors.newPassword.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -112,13 +109,14 @@ export function ChangePasswordForm() {
             <Input
               id="confirmPassword"
               type="password"
-              value={formData.confirmPassword}
-              onChange={(e) =>
-                setFormData({ ...formData, confirmPassword: e.target.value })
-              }
+              {...register("confirmPassword")}
               placeholder="Confirme a nova senha"
-              required
             />
+            {errors.confirmPassword && (
+              <p className="text-sm text-destructive">
+                {errors.confirmPassword.message}
+              </p>
+            )}
           </div>
 
           <Button type="submit" disabled={loading} className="w-full">

@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useNotes } from "@/contexts/NotesContext";
 import { Trash2 } from "lucide-react";
 import type React from "react";
@@ -20,13 +21,22 @@ export function PageList({ onPageSelect }: PageListProps) {
     cancelEdit,
   } = useNotes();
 
+  const { confirm, ConfirmDialog } = useConfirmDialog();
+
   const handlePageSelect = (pageId: string) => {
     if (isEditing && hasUnsavedChanges) {
-      if (confirm("Você tem alterações não salvas. Deseja continuar?")) {
-        cancelEdit();
-        setSelectedPageId(pageId);
-        onPageSelect?.();
-      }
+      confirm({
+        title: "Alterações não salvas",
+        description: "Você tem alterações não salvas. Deseja continuar?",
+        confirmText: "Continuar",
+        cancelText: "Cancelar",
+      }).then((confirmed) => {
+        if (confirmed) {
+          cancelEdit();
+          setSelectedPageId(pageId);
+          onPageSelect?.();
+        }
+      });
     } else {
       setSelectedPageId(pageId);
       onPageSelect?.();
@@ -35,9 +45,16 @@ export function PageList({ onPageSelect }: PageListProps) {
 
   const handleDeletePage = (e: React.MouseEvent, pageId: string) => {
     e.stopPropagation();
-    if (confirm("Tem certeza que deseja excluir esta entrada?")) {
-      deletePage(pageId);
-    }
+    confirm({
+      title: "Excluir página",
+      description: "Tem certeza que deseja excluir esta entrada?",
+      confirmText: "Excluir",
+      cancelText: "Cancelar",
+    }).then((confirmed) => {
+      if (confirmed) {
+        deletePage(pageId);
+      }
+    });
   };
 
   return (
@@ -88,6 +105,7 @@ export function PageList({ onPageSelect }: PageListProps) {
           </div>
         </div>
       ))}
+      <ConfirmDialog />
     </div>
   );
 }

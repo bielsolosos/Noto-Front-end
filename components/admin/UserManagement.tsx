@@ -31,9 +31,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import api from "@/lib/api";
-import { Trash2, UserPlus, Shield, ShieldOff } from "lucide-react";
+import { Shield, ShieldOff, Trash2, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 interface User {
   id: string;
@@ -155,7 +155,9 @@ export function UserManagement() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleToggleAdmin(user.id, user.role_admin)}
+                      onClick={() =>
+                        handleToggleAdmin(user.id, user.role_admin)
+                      }
                     >
                       {user.role_admin ? (
                         <ShieldOff className="h-3 w-3" />

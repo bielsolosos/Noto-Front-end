@@ -41,6 +41,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setDarkMode(initialDarkMode);
     setIsInitialized(true);
 
+    // Garantir sincronização com classe aplicada pelo script inline
+    if (initialDarkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+
     // Listener para mudanças na preferência do sistema
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = (e: MediaQueryListEvent) => {
