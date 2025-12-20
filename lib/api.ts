@@ -1,10 +1,8 @@
 import axios from "axios";
 import { toast } from "sonner";
+import { env } from "./env";
 
-// Detectar se está no servidor ou no cliente
-const isServer = typeof window === "undefined";
-
-const apiUrl = process.env.API_URL || "http://localhost:8080";
+const apiUrl = env.NEXT_PUBLIC_API_URL;
 
 const api = axios.create({
   baseURL: apiUrl,

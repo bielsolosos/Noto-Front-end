@@ -172,8 +172,11 @@ npm install
 # 3. Configure ambiente
 cp .env.example .env.local
 
-# 4. Configure API URL
-NEXT_PUBLIC_API_URL=http://localhost:3000
+# 4. Configure API
+# Base do backend (exposta no browser)
+NEXT_PUBLIC_API_URL=http://localhost:8080
+# Chave para autenticação (enviada pelo route handler)
+AUTH_API_KEY=<sua-chave>
 
 # 5. Inicie desenvolvimento
 npm run dev

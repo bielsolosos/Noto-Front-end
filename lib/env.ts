@@ -15,7 +15,8 @@ const getEnvVar = (key: string, defaultValue?: string): string => {
 export const env = {
   // API Configuration
   AUTH_API_KEY: getEnvVar("AUTH_API_KEY"),
-  AUTH_API_URL: getEnvVar("AUTH_API_URL"),
+  // Exposto ao browser; usar NEXT_PUBLIC_ para estar disponível no cliente
+  NEXT_PUBLIC_API_URL: getEnvVar("NEXT_PUBLIC_API_URL", "http://localhost:8080"),
 
   // Next.js Environment
   NODE_ENV: process.env.NODE_ENV || "development",
