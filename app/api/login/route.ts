@@ -1,13 +1,15 @@
-import { env } from "@/lib/env";
+import { serverEnv } from "@/lib/env.server";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   const { email, password } = await request.json();
 
-  const res = await fetch(`${env.NEXT_PUBLIC_API_URL}/auth`, {
+  console.log("[Login Route] Received login request for:", email);
+
+  const res = await fetch(`${serverEnv.API_URL}/auth`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password, apiKey: env.AUTH_API_KEY }),
+    body: JSON.stringify({ email, password, apiKey: serverEnv.AUTH_API_KEY }),
   });
 
   if (!res.ok) {

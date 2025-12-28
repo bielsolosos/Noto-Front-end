@@ -1,8 +1,8 @@
 import axios from "axios";
 import { toast } from "sonner";
-import { env } from "./env";
+import { clientEnv } from "./env.client";
 
-const apiUrl = env.NEXT_PUBLIC_API_URL;
+const apiUrl = clientEnv.API_URL;
 
 const api = axios.create({
   baseURL: apiUrl,
