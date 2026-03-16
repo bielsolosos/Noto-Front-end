@@ -44,7 +44,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <ThemeProvider>
           <AuthProvider>
-            <Toaster position="top-left" />
+            <Toaster position="bottom-right" />
             {children}
           </AuthProvider>
         </ThemeProvider>

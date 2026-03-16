@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 export function useKeyboardShortcuts() {
   const {
+    selectedPage,
     isEditing,
     hasUnsavedChanges,
     savePage,
@@ -55,7 +56,7 @@ export function useKeyboardShortcuts() {
       // Ctrl+E: Editar
       if (e.ctrlKey && e.key === "e") {
         e.preventDefault();
-        if (!isEditing) {
+        if (!isEditing && selectedPage) {
           startEditing();
           toast("Modo de edição ativado");
         }
@@ -67,11 +68,11 @@ export function useKeyboardShortcuts() {
         createNewPage();
       }
 
-      // Ctrl+B: Toggle sidebar
+      // Ctrl+Q: Toggle menu lateral
       if (e.ctrlKey && e.key === "q") {
         e.preventDefault();
         toggleSidebar();
-        toast("Sidebar alternada");
+        toast("Menu lateral alternado");
       }
     };
 
@@ -79,6 +80,7 @@ export function useKeyboardShortcuts() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [
     isEditing,
+    selectedPage,
     hasUnsavedChanges,
     savePage,
     cancelEdit,

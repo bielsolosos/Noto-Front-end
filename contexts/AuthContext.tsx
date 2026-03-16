@@ -9,7 +9,8 @@ interface User {
   id: string;
   email: string;
   username: string;
-  role_admin: boolean;
+  isActive: boolean;
+  roles: string[];
 }
 interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
@@ -45,7 +46,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchUser = async (token: string) => {
     try {
-      const response = await api.get("/users/me", {
+      const response = await api.get("api/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUser(response.data);
@@ -58,9 +59,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const login = async (email: string, password: string) => {
+  const login = async (username: string, password: string) => {
     try {
-      const response = await axios.post("/api/login", { email, password });
+      const response = await axios.post("/api/login", { username, password });
 
       const { token, refreshToken } = response.data;
 

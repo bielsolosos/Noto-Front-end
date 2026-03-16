@@ -49,7 +49,7 @@ export function ChangePasswordForm() {
   const onSubmit = async (data: ChangePasswordFormData) => {
     try {
       setLoading(true);
-      await api.post(`/users/change-password/${user?.id}`, {
+      await api.post(`api/users/change-password`, {
         oldPassword: data.oldPassword,
         newPassword: data.newPassword,
       });

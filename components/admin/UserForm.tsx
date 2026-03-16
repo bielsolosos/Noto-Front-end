@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import api from "@/lib/api";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -16,8 +15,8 @@ export function UserForm({ onSuccess }: UserFormProps) {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
-    apiKey: "",
-    role_admin: false,
+    password: "",
+    confirmPassword: "",
   });
   const [loading, setLoading] = useState(false);
 
@@ -27,17 +26,23 @@ export function UserForm({ onSuccess }: UserFormProps) {
     if (
       !formData.username.trim() ||
       !formData.email.trim() ||
-      !formData.apiKey.trim()
+      !formData.password ||
+      !formData.confirmPassword
     ) {
-      toast.error("Nome de usuário, email e API key são obrigatórios");
+      toast.error("Nome de usuário, email, senha e confirmação de senha são obrigatórios");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("As senhas não coincidem");
       return;
     }
 
     try {
       setLoading(true);
-      await api.post("/users", formData);
+      await api.post("api/users/register", formData);
       onSuccess();
-      setFormData({ username: "", email: "", apiKey: "", role_admin: false });
+      setFormData({ username: "", email: "", password: "", confirmPassword: "" });
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Erro ao criar usuário");
     } finally {
@@ -72,31 +77,27 @@ export function UserForm({ onSuccess }: UserFormProps) {
           required
         />
       </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="apiKey">API Key</Label>
+            <div className="space-y-2">
+        <Label htmlFor="password">Senha</Label>
         <Input
-          id="apiKey"
+          id="password"
           type="password"
-          value={formData.apiKey}
-          onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
-          placeholder="Digite a API key para criação"
+          value={formData.password}
+          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+          placeholder="Digite a senha"
           required
         />
-        <p className="text-xs text-muted-foreground">
-          API key necessária para criar novos usuários
-        </p>
       </div>
-
-      <div className="flex items-center space-x-2">
-        <Switch
-          id="admin-role"
-          checked={formData.role_admin}
-          onCheckedChange={(checked) =>
-            setFormData({ ...formData, role_admin: checked })
-          }
+            <div className="space-y-2">
+        <Label htmlFor="confirmPassword">Confirme a Senha</Label>
+        <Input
+          id="confirmPassword"
+          type="password"
+          value={formData.confirmPassword}
+          onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+          placeholder="Confirme a senha"
+          required
         />
-        <Label htmlFor="admin-role">Administrador</Label>
       </div>
 
       <div className="flex justify-end space-x-2 pt-4">

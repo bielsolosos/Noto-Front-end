@@ -1,20 +1,33 @@
 "use client";
 
 import api from "@/lib/api";
+import {
+  buildPageListSearchParams,
+  filterPageSummariesByQuery,
+} from "@/lib/pageSearch";
 import type { Page, PageSummaryDto } from "@/types/page";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   createContext,
   useContext,
   useEffect,
+  useMemo,
   useState,
   type ReactNode,
 } from "react";
 import { toast } from "sonner";
 
+interface RefreshPageListOptions {
+  query?: string;
+  useBackendSearch?: boolean;
+}
+
 interface NotesContextType {
   // Lista resumida para sidebar
   pageSummaries: PageSummaryDto[];
+  filteredPageSummaries: PageSummaryDto[];
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
   // Página completa selecionada
   selectedPage: Page | null;
   selectedPageId: string | null;
@@ -35,7 +48,7 @@ interface NotesContextType {
     pageId: string,
     data: { title: string; content: string }
   ) => Promise<void>;
-  refreshPageList: () => Promise<void>;
+  refreshPageList: (options?: RefreshPageListOptions) => Promise<void>;
   // Editor actions
   startEditing: () => void;
   cancelEdit: () => void;
@@ -53,6 +66,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   const [isLoadingList, setIsLoadingList] = useState(true);
   const [isLoadingPage, setIsLoadingPage] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -62,6 +76,11 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  const filteredPageSummaries = useMemo(
+    () => filterPageSummariesByQuery(pageSummaries, searchQuery),
+    [pageSummaries, searchQuery]
+  );
 
   // Função para atualizar a URL com o pageId
   const updateUrlWithPageId = (pageId: string | null) => {
@@ -93,10 +112,19 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   }, [selectedPage]);
 
   // Carregar lista resumida de páginas
-  const refreshPageList = async () => {
+  const refreshPageList = async (options: RefreshPageListOptions = {}) => {
     try {
       setIsLoadingList(true);
-      const response = await api.get<PageSummaryDto[]>("/pages");
+      const shouldUseBackendSearch =
+        Boolean(options.useBackendSearch) && Boolean(options.query?.trim());
+      const searchParams = shouldUseBackendSearch
+        ? buildPageListSearchParams(options.query || "")
+        : "";
+      const endpoint = searchParams
+        ? `api/pages/list?${searchParams}`
+        : "api/pages/list";
+
+      const response = await api.get<PageSummaryDto[]>(endpoint);
       setPageSummaries(response.data);
 
       // Verificar se há pageId na URL
@@ -136,7 +164,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     const loadFullPage = async (pageId: string) => {
       try {
         setIsLoadingPage(true);
-        const response = await api.get<Page>(`/pages/${pageId}`);
+        const response = await api.get<Page>(`api/pages/${pageId}`);
         setSelectedPage(response.data);
       } catch (error: any) {
         const errorMessage =
@@ -167,7 +195,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
         year: "numeric",
       });
 
-      const response = await api.post<Page>("/pages", {
+      const response = await api.post<Page>("api/pages", {
         title: `Entrada - ${today}`,
         content: `# Bem vindo a sua nova página `,
       });
@@ -190,7 +218,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
   const deletePage = async (pageId: string) => {
     try {
-      await api.delete(`/pages/${pageId}`);
+      await api.delete(`api/pages/${pageId}`);
 
       // Se a página deletada estava selecionada, limpar seleção
       if (selectedPageId === pageId) {
@@ -213,7 +241,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     data: { title: string; content: string }
   ) => {
     try {
-      const response = await api.put<Page>(`/pages/${pageId}`, data);
+      const response = await api.put<Page>(`api/pages/${pageId}`, data);
 
       // Atualizar página selecionada
       if (selectedPageId === pageId) {
@@ -298,6 +326,9 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     <NotesContext.Provider
       value={{
         pageSummaries,
+        filteredPageSummaries,
+        searchQuery,
+        setSearchQuery,
         selectedPage,
         selectedPageId,
         isLoadingList,

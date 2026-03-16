@@ -1,15 +1,13 @@
-import { serverEnv } from "@/lib/env.server";
+import { env } from "@/lib/env";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
-  const { email, password } = await request.json();
+  const { username, password } = await request.json();
 
-  console.log("[Login Route] Received login request for:", email);
-
-  const res = await fetch(`${serverEnv.API_URL}/auth`, {
+  const res = await fetch(`${env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password, apiKey: serverEnv.AUTH_API_KEY }),
+    body: JSON.stringify({ username, password }),
   });
 
   if (!res.ok) {
@@ -20,5 +18,8 @@ export async function POST(request: NextRequest) {
   const data = await res.json();
 
   // Retorna para o front só o necessário (token, refreshToken)
-  return NextResponse.json(data);
+  return NextResponse.json({
+    token: data.token,
+    refreshToken: data.refreshToken,
+  });
 }

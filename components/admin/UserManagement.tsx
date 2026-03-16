@@ -30,8 +30,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
-import { Shield, ShieldOff, Trash2, UserPlus } from "lucide-react";
+import { CheckCircle2, Trash2, UserPlus, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -39,10 +40,11 @@ interface User {
   id: string;
   email: string;
   username: string;
-  role_admin: boolean;
+  roles: string[];
+  isActive: boolean;
 }
-
 export function UserManagement() {
+  const { user: loggedUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -50,7 +52,7 @@ export function UserManagement() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await api.get("/users");
+      const response = await api.get("api/admin/users/list");
       setUsers(response.data);
     } catch (error: any) {
       toast.error("Erro ao carregar usuários");
@@ -65,7 +67,7 @@ export function UserManagement() {
 
   const handleDeleteUser = async (userId: string) => {
     try {
-      await api.delete(`/users/${userId}`);
+      await api.delete(`api/admin/users/${userId}`);
       toast.success("Usuário deletado com sucesso");
       fetchUsers();
     } catch (error: any) {
@@ -73,14 +75,15 @@ export function UserManagement() {
     }
   };
 
-  const handleToggleAdmin = async (userId: string, currentRole: boolean) => {
+  const handleToggleActive = async (userId: string) => {
+    if (loggedUser?.id === userId) {
+      toast.error("Você não pode desativar sua própria conta");
+      return;
+    }
+
     try {
-      await api.put(`/users/${userId}/role`, {
-        role_admin: !currentRole,
-      });
-      toast.success(
-        `Usuário ${!currentRole ? "promovido a" : "removido de"} administrador`
-      );
+      await api.patch(`api/admin/users/${userId}/toggle-active`);
+      toast.success("Usuário desativado/ativado com sucesso");
       fetchUsers();
     } catch (error: any) {
       toast.error("Erro ao alterar permissões do usuário");
@@ -145,24 +148,30 @@ export function UserManagement() {
                 <TableCell className="font-medium">{user.username}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>
-                  <Badge variant={user.role_admin ? "default" : "secondary"}>
-                    {user.role_admin ? "Administrador" : "Usuário"}
+                  <Badge
+                    variant={
+                      user.roles.includes("ROLE_ADMIN")
+                        ? "default"
+                        : "secondary"
+                    }
+                  >
+                    {user.roles.includes("ROLE_ADMIN")
+                      ? "Administrador"
+                      : "Usuário"}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
-                    {/* Toggle Admin */}
+                    {/* Toggle Active */}
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() =>
-                        handleToggleAdmin(user.id, user.role_admin)
-                      }
+                      onClick={() => handleToggleActive(user.id)}
                     >
-                      {user.role_admin ? (
-                        <ShieldOff className="h-3 w-3" />
+                      {user.isActive ? (
+                        <CheckCircle2 className="h-4 w-4" />
                       ) : (
-                        <Shield className="h-3 w-3" />
+                        <XCircle className="h-4 w-4 " />
                       )}
                     </Button>
 

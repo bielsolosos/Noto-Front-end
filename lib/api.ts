@@ -1,8 +1,8 @@
 import axios from "axios";
 import { toast } from "sonner";
-import { clientEnv } from "./env.client";
+import { env } from "./env";
 
-const apiUrl = clientEnv.API_URL;
+const apiUrl = env.NEXT_PUBLIC_API_URL;
 
 const api = axios.create({
   baseURL: apiUrl,
@@ -47,7 +47,7 @@ api.interceptors.response.use(
       }
 
       try {
-        const res = await axios.post(`${apiUrl}/auth/refresh`, {
+        const res = await axios.post(`${apiUrl}/api/auth/refresh`, {
           refreshToken,
         });
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { ChangePasswordForm } from "@/components/settings/ChangePasswordForm";
+import { EditCredentialsForm } from "@/components/settings/EditCredentialsForm";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft } from "lucide-react";
@@ -63,23 +64,7 @@ export default function SettingsPage() {
 
               {/* User Badges */}
               <div className="space-y-4">
-                <div>
-                  <label className="text-sm text-muted-foreground mb-2 block">
-                    Nome de usuário
-                  </label>
-                  <div className="px-3 py-2 bg-muted rounded-md">
-                    <span className="text-sm font-medium">{user.username}</span>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-sm text-muted-foreground mb-2 block">
-                    Email
-                  </label>
-                  <div className="px-3 py-2 bg-muted rounded-md">
-                    <span className="text-sm font-medium">{user.email}</span>
-                  </div>
-                </div>
+                <EditCredentialsForm />
 
                 <div>
                   <label className="text-sm text-muted-foreground mb-2 block">
@@ -88,12 +73,12 @@ export default function SettingsPage() {
                   <div className="inline-flex">
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        user.role_admin
+                        user.roles.includes("ROLE_ADMIN")
                           ? "bg-primary/10 text-primary"
                           : "bg-muted text-muted-foreground"
                       }`}
                     >
-                      {user.role_admin ? "Administrador" : "Usuário"}
+                      {user.roles.includes("ROLE_ADMIN") ? "Administrador" : "Usuário"}
                     </span>
                   </div>
                 </div>
