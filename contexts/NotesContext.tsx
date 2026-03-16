@@ -6,7 +6,7 @@ import {
   filterPageSummariesByQuery,
 } from "@/lib/pageSearch";
 import type { Page, PageSummaryDto } from "@/types/page";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   createContext,
   useContext,
@@ -68,6 +68,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   const [isCreating, setIsCreating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -84,22 +85,42 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
   // Função para atualizar a URL com o pageId
   const updateUrlWithPageId = (pageId: string | null) => {
-    const currentUrl = new URL(window.location.href);
+    const nextSearchParams = new URLSearchParams(searchParams.toString());
 
     if (pageId) {
-      currentUrl.searchParams.set("pageId", pageId);
+      nextSearchParams.set("pageId", pageId);
     } else {
-      currentUrl.searchParams.delete("pageId");
+      nextSearchParams.delete("pageId");
     }
 
     // Usar replace para não adicionar ao histórico
-    router.replace(currentUrl.pathname + currentUrl.search);
+    const nextSearch = nextSearchParams.toString();
+    router.replace(nextSearch ? `${pathname}?${nextSearch}` : pathname);
   };
 
   // Função personalizada para setSelectedPageId que também atualiza a URL
   const setSelectedPageIdWithUrl = (pageId: string | null) => {
     setSelectedPageId(pageId);
     updateUrlWithPageId(pageId);
+  };
+
+  const resolveSelectedPageId = (
+    pages: PageSummaryDto[],
+    pageIdFromUrl: string | null,
+    currentSelectedPageId: string | null
+  ) => {
+    const pageExists = (pageId: string | null) =>
+      pageId ? pages.some((page) => page.id === pageId) : false;
+
+    if (pageExists(pageIdFromUrl)) {
+      return pageIdFromUrl;
+    }
+
+    if (pageExists(currentSelectedPageId)) {
+      return currentSelectedPageId;
+    }
+
+    return pages[0]?.id ?? null;
   };
 
   useEffect(() => {
@@ -117,38 +138,30 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       setIsLoadingList(true);
       const shouldUseBackendSearch =
         Boolean(options.useBackendSearch) && Boolean(options.query?.trim());
-      const searchParams = shouldUseBackendSearch
+      const listSearchParams = shouldUseBackendSearch
         ? buildPageListSearchParams(options.query || "")
         : "";
-      const endpoint = searchParams
-        ? `api/pages/list?${searchParams}`
+      const endpoint = listSearchParams
+        ? `api/pages/list?${listSearchParams}`
         : "api/pages/list";
 
       const response = await api.get<PageSummaryDto[]>(endpoint);
       setPageSummaries(response.data);
 
-      // Verificar se há pageId na URL
       const pageIdFromUrl = searchParams.get("pageId");
 
-      if (
-        pageIdFromUrl &&
-        response.data.some((page) => page.id === pageIdFromUrl)
-      ) {
-        // Se há um pageId válido na URL, usar ele (mas não atualizar a URL novamente)
-        if (selectedPageId !== pageIdFromUrl) {
-          setSelectedPageId(pageIdFromUrl);
-        }
-      } else if (!selectedPageId && response.data.length > 0) {
-        // Se não há página selecionada e não há pageId na URL, selecionar a primeira
-        setSelectedPageIdWithUrl(response.data[0].id);
-      } else if (
-        pageIdFromUrl &&
-        !response.data.some((page) => page.id === pageIdFromUrl)
-      ) {
-        // Se o pageId da URL não existe mais, limpar a URL e selecionar a primeira página
-        setSelectedPageIdWithUrl(
-          response.data.length > 0 ? response.data[0].id : null
-        );
+      const nextSelectedPageId = resolveSelectedPageId(
+        response.data,
+        pageIdFromUrl,
+        selectedPageId
+      );
+
+      if (nextSelectedPageId !== selectedPageId) {
+        setSelectedPageId(nextSelectedPageId);
+      }
+
+      if (pageIdFromUrl !== nextSelectedPageId) {
+        updateUrlWithPageId(nextSelectedPageId);
       }
     } catch (error: any) {
       const errorMessage =
@@ -313,14 +326,6 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     refreshPageList();
   }, []);
-
-  // Sincronizar selectedPageId com a URL quando selectedPageId muda
-  useEffect(() => {
-    const pageIdFromUrl = searchParams.get("pageId");
-    if (selectedPageId && selectedPageId !== pageIdFromUrl) {
-      updateUrlWithPageId(selectedPageId);
-    }
-  }, [selectedPageId]);
 
   return (
     <NotesContext.Provider

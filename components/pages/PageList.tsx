@@ -3,14 +3,16 @@
 import { Button } from "@/components/ui/button";
 import { useConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useNotes } from "@/contexts/NotesContext";
+import type { PageSummaryDto } from "@/types/page";
 import { Trash2 } from "lucide-react";
 import type React from "react";
 
 interface PageListProps {
   onPageSelect?: () => void; // Callback para fechar drawer no mobile
+  pages?: PageSummaryDto[];
 }
 
-export function PageList({ onPageSelect }: PageListProps) {
+export function PageList({ onPageSelect, pages }: PageListProps) {
   const {
     pageSummaries,
     selectedPageId,
@@ -22,6 +24,7 @@ export function PageList({ onPageSelect }: PageListProps) {
   } = useNotes();
 
   const { confirm, ConfirmDialog } = useConfirmDialog();
+  const pagesToShow = pages ?? pageSummaries;
 
   const handlePageSelect = (pageId: string) => {
     if (isEditing && hasUnsavedChanges) {
@@ -59,7 +62,15 @@ export function PageList({ onPageSelect }: PageListProps) {
 
   return (
     <div className="space-y-2">
-      {pageSummaries.map((page) => (
+      {pagesToShow.length === 0 && (
+        <div className="rounded-lg border border-dashed border-border p-4 text-center">
+          <p className="text-sm text-muted-foreground">
+            Nenhum resultado para a busca.
+          </p>
+        </div>
+      )}
+
+      {pagesToShow.map((page) => (
         <div
           key={page.id}
           className={`group relative rounded-lg p-3 cursor-pointer transition-all duration-200 hover:bg-accent/80 ${
