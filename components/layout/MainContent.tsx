@@ -2,13 +2,21 @@
 
 import { NoteEditor } from "@/components/notes/NoteEditor";
 import { NoteViewer } from "@/components/notes/NoteViewer";
+import { Button } from "@/components/ui/button";
 import { useNotes } from "@/contexts/NotesContext";
 import { useMobile } from "@/hooks/useMobile";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Edit3, X } from "lucide-react";
 import { LoadingSpinner } from "./LoadingSpinner";
 
 export function MainContent() {
-  const { selectedPage, isEditing, pageSummaries, isLoadingList } = useNotes();
+  const {
+    selectedPage,
+    isEditing,
+    pageSummaries,
+    isLoadingList,
+    cancelEdit,
+    startEditing,
+  } = useNotes();
   const isMobile = useMobile();
 
   const hasPages = pageSummaries.length > 0;
@@ -27,11 +35,11 @@ export function MainContent() {
                 <p className="text-muted-foreground text-sm md:text-base">
                   {!hasPages
                     ? isMobile
-                      ? "Toque no menu e crie sua primeira entrada para começar."
-                      : "Crie sua primeira entrada para começar a organizar seus pensamentos e ideias."
+                      ? "Toque no botão lateral e crie sua primeira entrada para começar."
+                      : "Use o botão lateral fixo para abrir o menu e criar sua primeira entrada."
                     : isMobile
-                    ? "Toque no menu para ver suas entradas ou criar uma nova."
-                    : "Selecione uma entrada existente ou crie uma nova para começar a escrever seus pensamentos e reflexões."}
+                    ? "Toque no botão lateral para ver suas entradas ou criar uma nova."
+                    : "Abra o menu lateral pelo botão fixo para alternar entradas ou criar uma nova."}
                 </p>
               </div>
             </div>
@@ -45,6 +53,28 @@ export function MainContent() {
 
   return (
     <main className="flex-1 overflow-hidden">
+      {
+        <Button
+          onClick={isEditing ? cancelEdit : startEditing}
+          size="sm"
+          variant={isEditing ? "outline" : "default"}
+          className="fixed right-4 top-4 z-[45] h-10 rounded-full px-3 shadow-md"
+          aria-label={isEditing ? "Sair do modo de edição" : "Editar entrada"}
+        >
+          {isEditing ? (
+            <>
+              <X className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">Sair</span>
+            </>
+          ) : (
+            <>
+              <Edit3 className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">Editar</span>
+            </>
+          )}
+        </Button>
+      }
+
       <div className="h-full overflow-auto">
         {isEditing ? <NoteEditor /> : <NoteViewer />}
       </div>

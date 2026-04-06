@@ -14,7 +14,7 @@ export default function LoginScreen() {
 }
 
 const loginSchema = z.object({
-  email: z.string().email("Email inválido"),
+  username: z.string(),
   password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
 });
 
@@ -33,7 +33,7 @@ function LoginContent() {
 
   async function onSubmit(data: LoginFormData) {
     try {
-      await login(data.email, data.password);
+      await login(data.username, data.password);
     } catch (error) {
       toast.error("Erro ao fazer login");
     }
@@ -85,27 +85,27 @@ function LoginContent() {
               <div>
                 <label
                   className="block mb-2 text-sm font-medium"
-                  htmlFor="email"
+                  htmlFor="username"
                 >
-                  Email
+                  Usuário
                 </label>
                 <div className="relative">
                   <input
-                    id="email"
-                    type="email"
-                    {...register("email")}
+                    id="username"
+                    type="text"
+                    {...register("username")}
                     className="w-full px-4 py-3 rounded-lg border transition-all duration-200 focus:ring-2 focus:ring-primary/20"
                     style={{
                       borderColor: "hsl(var(--border))",
                       backgroundColor: "hsl(var(--background))",
                       color: "hsl(var(--foreground))",
                     }}
-                    autoComplete="email"
-                    placeholder="Email"
+                    autoComplete="username"
+                    placeholder="Usuário"
                   />
-                  {errors.email && (
+                  {errors.username && (
                     <p className="mt-1.5 text-sm text-destructive">
-                      {errors.email.message}
+                      {errors.username.message}
                     </p>
                   )}
                 </div>

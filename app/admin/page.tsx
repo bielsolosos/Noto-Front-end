@@ -13,12 +13,12 @@ export default function AdminPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!user?.role_admin) {
+    if (!user?.roles.includes("ROLE_ADMIN")) {
       router.push("/editor");
     }
   }, [user, router]);
 
-  if (!user?.role_admin) {
+  if (!user?.roles.includes("ROLE_ADMIN")) {
     return null;
   }
 
