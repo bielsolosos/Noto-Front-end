@@ -11,10 +11,12 @@ interface User {
   username: string;
   isActive: boolean;
   roles: string[];
+  profileImageUrl?: string | null;
 }
 interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
   user: User | null;
   accessToken: string | null;
 }
@@ -74,16 +76,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const refreshUser = async () => {
+    const token = accessToken || localStorage.getItem("accessToken");
+    if (!token) {
+      return;
+    }
+
+    await fetchUser(token);
+  };
+
   const logout = () => {
     setAccessToken(null);
     setRefreshToken(null);
+    setUser(null);
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     router.push("/");
   };
 
   return (
-    <AuthContext.Provider value={{ login, logout, accessToken, user }}>
+    <AuthContext.Provider
+      value={{ login, logout, refreshUser, accessToken, user }}
+    >
       {children}
     </AuthContext.Provider>
   );

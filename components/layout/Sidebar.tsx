@@ -2,7 +2,7 @@
 
 import { PageList } from "@/components/pages/PageList";
 import { PageListSkeleton } from "@/components/skeletons/PageListSkeleton";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -122,6 +122,10 @@ function SidebarPanel({ isMobileLayout }: SidebarPanelProps) {
                 aria-label="Abrir menu de conta"
               >
                 <Avatar className="h-10 w-10">
+                  <AvatarImage
+                    src={user?.profileImageUrl || undefined}
+                    alt={user?.username || "Usuário"}
+                  />
                   <AvatarFallback className="bg-primary/15 text-primary font-semibold">
                     {userInitial}
                   </AvatarFallback>

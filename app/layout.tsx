@@ -1,6 +1,7 @@
+import { ThemeProvider as NextThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { ThemeProvider } from "@/contexts/ThemeContext";
+import { ThemeProvider as ThemeContextProvider } from "@/contexts/ThemeContext";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import type React from "react";
@@ -19,21 +20,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                const saved = localStorage.getItem('noto-theme');
-                const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-                if (theme === 'dark') {
-                  document.documentElement.classList.add('dark');
-                }
-              })();
-            `,
-          }}
-        />
         <link
           color="white"
           rel="icon"
@@ -42,12 +30,19 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
-        <ThemeProvider>
-          <AuthProvider>
-            <Toaster position="bottom-right" />
-            {children}
-          </AuthProvider>
-        </ThemeProvider>
+        <NextThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          storageKey="noto-theme"
+        >
+          <ThemeContextProvider>
+            <AuthProvider>
+              <Toaster position="bottom-right" />
+              {children}
+            </AuthProvider>
+          </ThemeContextProvider>
+        </NextThemeProvider>
       </body>
     </html>
   );
