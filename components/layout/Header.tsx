@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -116,6 +116,10 @@ export function Header() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                 <Avatar className="h-9 w-9">
+                  <AvatarImage
+                    src={user?.profileImageUrl || undefined}
+                    alt={user?.username || "Usuário"}
+                  />
                   <AvatarFallback className="bg-primary/10 text-primary">
                     {user?.username?.charAt(0).toUpperCase() || "U"}
                   </AvatarFallback>
