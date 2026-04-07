@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNotes } from "@/contexts/NotesContext";
 import { parseMarkdown } from "@/lib/markdownParser";
+import { uploadMedia } from "@/lib/media";
 import {
   Bold,
   Code,
@@ -23,6 +24,7 @@ import {
   Quote,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 export function NoteEditor() {
   const { editTitle, editContent, handleTitleChange, handleContentChange } =
@@ -43,7 +45,13 @@ export function NoteEditor() {
     }
   );
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const editContentRef = useRef(editContent);
+
+  useEffect(() => {
+    editContentRef.current = editContent;
+  }, [editContent]);
 
   // Salvar no localStorage quando o modo mudar
   useEffect(() => {
@@ -104,7 +112,8 @@ export function NoteEditor() {
       const textarea = textareaRef.current;
       const start = textarea.selectionStart;
       const end = textarea.selectionEnd;
-      const selectedText = editContent.substring(start, end);
+      const currentContent = editContentRef.current;
+      const selectedText = currentContent.substring(start, end);
 
       // Salvar a posição do scroll atual
       const scrollTop = textarea.scrollTop;
@@ -116,7 +125,9 @@ export function NoteEditor() {
           : beforeText + afterText;
 
       const newContent =
-        editContent.substring(0, start) + newText + editContent.substring(end);
+        currentContent.substring(0, start) +
+        newText +
+        currentContent.substring(end);
 
       handleContentChange(newContent);
 
@@ -139,7 +150,7 @@ export function NoteEditor() {
         textarea.scrollLeft = scrollLeft;
       }, 0);
     },
-    [editContent, handleContentChange]
+    [handleContentChange]
   );
 
   // Funções para formatação
@@ -154,23 +165,59 @@ export function NoteEditor() {
   const insertOrderedList = () => insertTextAtCursor("1. ", "");
   const insertLink = () => insertTextAtCursor("[", "](url)");
 
-  // Interceptor de Ctrl+V para imagens
-  const handlePaste = useCallback(
-    (e: ClipboardEvent) => {
-      const pastedText = e.clipboardData?.getData("text");
+  const getImageFileFromClipboard = useCallback((e: ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (!items) {
+      return null;
+    }
 
-      if (
-        pastedText &&
-        (pastedText.match(/\.(jpeg|jpg|gif|png|svg|webp|bmp)$/i) ||
-          pastedText.includes("imgur.com") ||
-          pastedText.includes("cdn.") ||
-          pastedText.includes("images."))
-      ) {
-        e.preventDefault();
-        insertTextAtCursor(`![Imagem](${pastedText})`, "");
+    for (const item of items) {
+      if (item.kind === "file" && item.type.startsWith("image/")) {
+        const file = item.getAsFile();
+        if (file) {
+          return file;
+        }
+      }
+    }
+
+    return null;
+  }, []);
+
+  // Interceptor de Ctrl+V para upload de imagens
+  const handlePaste = useCallback(
+    async (e: ClipboardEvent) => {
+      const textarea = textareaRef.current;
+      if (!textarea || document.activeElement !== textarea) {
+        return;
+      }
+
+      const imageFile = getImageFileFromClipboard(e);
+      if (!imageFile) {
+        return;
+      }
+
+      e.preventDefault();
+
+      if (isUploadingImage) {
+        return;
+      }
+
+      setIsUploadingImage(true);
+      const uploadToastId = toast.loading("Enviando imagem...");
+
+      try {
+        const mediaResponse = await uploadMedia(imageFile);
+        insertTextAtCursor(mediaResponse.markdown, "");
+        toast.success("Imagem enviada com sucesso", { id: uploadToastId });
+      } catch {
+        toast.error("Erro ao enviar imagem. Tente novamente.", {
+          id: uploadToastId,
+        });
+      } finally {
+        setIsUploadingImage(false);
       }
     },
-    [insertTextAtCursor]
+    [getImageFileFromClipboard, insertTextAtCursor, isUploadingImage]
   );
 
   // Função inteligente para handling de Enter
