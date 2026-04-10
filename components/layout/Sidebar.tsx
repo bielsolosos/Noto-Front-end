@@ -19,7 +19,7 @@ import { useSidebar } from "@/contexts/SidebarContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useMobile } from "@/hooks/useMobile";
 import { cn } from "@/lib/utils";
-import { BookOpen, LogOut, Moon, Plus, Search, Settings, Shield, Sun } from "lucide-react";
+import { BookOpen, Image as ImageIcon, LogOut, Moon, Plus, Search, Settings, Shield, Sun } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef } from "react";
 
@@ -141,6 +141,12 @@ function SidebarPanel({ isMobileLayout }: SidebarPanelProps) {
                 <Link href="/settings" onClick={closeAfterAction}>
                   <Settings className="mr-2 h-4 w-4" />
                   <span>Configurações</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/media" onClick={closeAfterAction}>
+                  <ImageIcon className="mr-2 h-4 w-4" />
+                  <span>Galeria</span>
                 </Link>
               </DropdownMenuItem>
               {isAdmin && (
