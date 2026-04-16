@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { ExportDropdown } from "../notes/ExportDropdown";
 import { MobileSidebar } from "./MobileSidebar";
 
 export function Header() {
@@ -104,10 +105,13 @@ export function Header() {
             </div>
           ) : (
             selectedPage && (
-              <Button onClick={startEditing} size="sm" className="h-8">
-                <Edit3 className="h-3 w-3 md:mr-2" />
-                <span className="hidden md:inline">Editar</span>
-              </Button>
+              <div className="flex items-center gap-1 md:gap-2">
+                <ExportDropdown pageId={selectedPage.id} size="sm" className="h-8" />
+                <Button onClick={startEditing} size="sm" className="h-8">
+                  <Edit3 className="h-3 w-3 md:mr-2" />
+                  <span className="hidden md:inline">Editar</span>
+                </Button>
+              </div>
             )
           )}
 

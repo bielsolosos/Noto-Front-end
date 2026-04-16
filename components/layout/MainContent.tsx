@@ -7,6 +7,7 @@ import { useNotes } from "@/contexts/NotesContext";
 import { useMobile } from "@/hooks/useMobile";
 import { BookOpen, Edit3, X } from "lucide-react";
 import { LoadingSpinner } from "./LoadingSpinner";
+import { ExportDropdown } from "../notes/ExportDropdown";
 
 export function MainContent() {
   const {
@@ -53,12 +54,20 @@ export function MainContent() {
 
   return (
     <main className="flex-1 overflow-hidden">
-      {
+      <div className="fixed right-4 top-4 z-[45] flex items-center gap-3">
+        {!isEditing && selectedPage && (
+          <ExportDropdown 
+            pageId={selectedPage.id} 
+            size="sm" 
+            variant="outline" 
+            className="h-10 rounded-full px-4 shadow-md bg-background" 
+          />
+        )}
         <Button
           onClick={isEditing ? cancelEdit : startEditing}
           size="sm"
           variant={isEditing ? "outline" : "default"}
-          className="fixed right-4 top-4 z-[45] h-10 rounded-full px-3 shadow-md"
+          className="h-10 rounded-full px-4 shadow-md"
           aria-label={isEditing ? "Sair do modo de edição" : "Editar entrada"}
         >
           {isEditing ? (
@@ -73,7 +82,7 @@ export function MainContent() {
             </>
           )}
         </Button>
-      }
+      </div>
 
       <div className="h-full overflow-auto">
         {isEditing ? <NoteEditor /> : <NoteViewer />}
