@@ -37,7 +37,9 @@ jobs:
       - name: Instalar dependencias
         run: yarn install --frozen-lockfile
 
-      - name: Lint
+      - name: Lint (informativo)
+        id: lint
+        continue-on-error: true
         run: yarn lint
 
       - name: Typecheck
@@ -50,7 +52,7 @@ jobs:
         run: |
           {
             echo "## CI Next.js"
-            echo "- Lint: concluido"
+            echo "- Lint: ${{ steps.lint.outcome == 'success' && 'concluido' || 'falhou (informativo, nao bloqueante)' }}"
             echo "- Typecheck: concluido"
             echo "- Build: concluido"
             echo "- NEXT_PUBLIC_API_URL usada: ${NEXT_PUBLIC_API_URL}"

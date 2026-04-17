@@ -84,7 +84,7 @@ export function parseMarkdown(markdown: string): string {
     const cells = content
       .split("|")
       .map((cell: string) => cell.trim())
-      .filter((cell) => cell);
+      .filter((cell: string) => cell);
     return `TABLE_ROW${cells
       .map((cell: string) => `<td class="markdown-td">${cell}</td>`)
       .join("")}END_TABLE_ROW`;
