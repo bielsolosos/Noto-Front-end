@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { deleteMedia, getMedia, uploadMedia } from "@/lib/media";
 import type { MediaResponse } from "@/types/media";
@@ -9,8 +11,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 export default function MediaPage() {
   const { user } = useAuth();
@@ -187,7 +187,6 @@ export default function MediaPage() {
                         </Button>
                         <Button
                           variant="destructive"
-                          size="sm"
                           size="icon"
                           className="shrink-0"
                           onClick={() => handleDelete(media.id)}
