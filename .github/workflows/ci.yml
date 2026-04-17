@@ -1,0 +1,119 @@
+name: CI - Frontend Next.js
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+concurrency:
+  group: frontend-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  quality:
+    name: Lint, Typecheck e Build
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL || 'http://localhost:8080' }}
+
+    steps:
+      - name: Checkout codigo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 20 LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: yarn
+          cache-dependency-path: yarn.lock
+
+      - name: Instalar dependencias
+        run: yarn install --frozen-lockfile
+
+      - name: Lint
+        run: yarn lint
+
+      - name: Typecheck
+        run: yarn tsc --noEmit
+
+      - name: Build de producao
+        run: yarn build
+
+      - name: Resumo do job
+        run: |
+          {
+            echo "## CI Next.js"
+            echo "- Lint: concluido"
+            echo "- Typecheck: concluido"
+            echo "- Build: concluido"
+            echo "- NEXT_PUBLIC_API_URL usada: ${NEXT_PUBLIC_API_URL}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  sonarcloud:
+    name: SonarCloud (informativo)
+    runs-on: ubuntu-latest
+    needs: quality
+
+    steps:
+      - name: Checkout codigo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 20 LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: yarn
+          cache-dependency-path: yarn.lock
+
+      - name: Instalar dependencias
+        run: yarn install --frozen-lockfile
+
+      - name: Verificar configuracao SonarCloud
+        id: sonar-config
+        shell: bash
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+          SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
+        run: |
+          if [[ -n "$SONAR_TOKEN" && -n "$SONAR_PROJECT_KEY" && -n "$SONAR_ORGANIZATION" ]]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "enabled=false" >> "$GITHUB_OUTPUT"
+          {
+            echo "## SonarCloud"
+            echo "Analise pulada: configure SONAR_TOKEN (secret), SONAR_PROJECT_KEY e SONAR_ORGANIZATION (variables)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Analise SonarCloud
+        if: ${{ steps.sonar-config.outputs.enabled == 'true' }}
+        uses: SonarSource/sonarqube-scan-action@v5
+        continue-on-error: true
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
+            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.sources=.
+            -Dsonar.exclusions=**/node_modules/**,**/.next/**,**/coverage/**
+
+      - name: Resultado SonarCloud
+        if: ${{ steps.sonar-config.outputs.enabled == 'true' }}
+        run: |
+          {
+            echo "## SonarCloud"
+            echo "Analise executada em modo informativo (nao bloqueante)."
+          } >> "$GITHUB_STEP_SUMMARY"
