@@ -30,7 +30,7 @@ import "react-easy-crop/react-easy-crop.css";
 import { toast } from "sonner";
 
 export default function SettingsPage() {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, isLoading } = useAuth();
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
   const objectUrlRef = useRef<string | null>(null);
@@ -43,10 +43,10 @@ export default function SettingsPage() {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 
   useEffect(() => {
-    if (!user) {
-      router.push("/");
+    if (!isLoading && !user) {
+      router.replace("/");
     }
-  }, [user, router]);
+  }, [user, isLoading, router]);
 
   useEffect(() => {
     return () => {
@@ -56,7 +56,7 @@ export default function SettingsPage() {
     };
   }, []);
 
-  if (!user) {
+  if (isLoading || !user) {
     return null;
   }
 

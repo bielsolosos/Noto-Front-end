@@ -9,16 +9,16 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 export default function AdminPage() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!user?.roles.includes("ROLE_ADMIN")) {
-      router.push("/editor");
+    if (!isLoading && !user?.roles.includes("ROLE_ADMIN")) {
+      router.replace("/editor");
     }
-  }, [user, router]);
+  }, [user, isLoading, router]);
 
-  if (!user?.roles.includes("ROLE_ADMIN")) {
+  if (isLoading || !user?.roles.includes("ROLE_ADMIN")) {
     return null;
   }
 

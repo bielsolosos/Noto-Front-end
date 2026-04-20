@@ -24,11 +24,19 @@ import {
   Quote,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
 import { toast } from "sonner";
 
 export function NoteEditor() {
-  const { editTitle, editContent, handleTitleChange, handleContentChange } =
-    useNotes();
+  const {
+    editTitle,
+    editContent,
+    handleTitleChange,
+    handleContentChange,
+    autoSavePage,
+    hasUnsavedChanges,
+    isSaving,
+  } = useNotes();
 
   // Estado com localStorage para persistir o modo preferido
   const [previewMode, setPreviewMode] = useState<"edit" | "preview" | "split">(
@@ -59,6 +67,19 @@ export function NoteEditor() {
       localStorage.setItem("noteEditorMode", previewMode);
     }
   }, [previewMode]);
+
+  // Auto-save usando um custom hook
+  const debouncedAutoSave = useDebouncedCallback(() => {
+    if (hasUnsavedChanges) {
+      autoSavePage();
+    }
+  }, 2000);
+
+  useEffect(() => {
+    if (hasUnsavedChanges) {
+      debouncedAutoSave();
+    }
+  }, [editContent, editTitle, hasUnsavedChanges, debouncedAutoSave]);
 
   // Sistema de Undo/Redo
   const [history, setHistory] = useState<string[]>([editContent]);
@@ -480,6 +501,33 @@ export function NoteEditor() {
     redo,
   ]);
 
+  const renderSaveStatus = () => {
+    if (isSaving) {
+      return (
+        <>
+          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+          Salvando...
+        </>
+      );
+    }
+
+    if (hasUnsavedChanges) {
+      return (
+        <>
+          <span className="w-2 h-2 rounded-full bg-muted-foreground" />
+          Editando...
+        </>
+      );
+    }
+
+    return (
+      <>
+        <span className="w-2 h-2 rounded-full bg-emerald-500" />
+        Salvo
+      </>
+    );
+  };
+
   return (
     <div
       className={`transition-all duration-300 opacity-100 translate-y-0 ${
@@ -532,7 +580,10 @@ export function NoteEditor() {
               Split
             </Button>
 
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-4">
+              <span className="text-sm text-muted-foreground flex items-center gap-2">
+                {renderSaveStatus()}
+              </span>
               <Button
                 variant="ghost"
                 size="sm"
