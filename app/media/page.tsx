@@ -13,7 +13,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 export default function MediaPage() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const router = useRouter();
   const [mediaPage, setMediaPage] = useState<PageResponse<MediaResponse> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -23,10 +23,10 @@ export default function MediaPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (!user) {
-      router.push("/");
+    if (!isLoading && !user) {
+      router.replace("/");
     }
-  }, [user, router]);
+  }, [user, isLoading, router]);
 
   const fetchMedia = async (page = 0, filter = search) => {
     try {
@@ -91,7 +91,7 @@ export default function MediaPage() {
     toast.success("Copiado para a área de transferência!");
   };
 
-  if (!user) return null;
+  if (isLoading || !user) return null;
 
   return (
     <div className="min-h-screen bg-background">

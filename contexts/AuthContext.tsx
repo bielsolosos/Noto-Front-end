@@ -19,6 +19,7 @@ interface AuthContextType {
   refreshUser: () => Promise<void>;
   user: User | null;
   accessToken: string | null;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -27,6 +28,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -36,6 +38,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setAccessToken(token);
       setRefreshToken(refresh);
       fetchUser(token);
+    } else {
+      setIsLoading(false);
     }
   }, []);
 
@@ -58,11 +62,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (error.response?.status === 401 || error.response?.status === 403) {
         logout();
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const login = async (username: string, password: string) => {
     try {
+      setIsLoading(true);
       const response = await api.post("api/auth/login", {
         username,
         password,
@@ -92,14 +99,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setAccessToken(null);
     setRefreshToken(null);
     setUser(null);
+    setIsLoading(false);
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
-    router.push("/");
+    router.replace("/");
   };
 
   return (
     <AuthContext.Provider
-      value={{ login, logout, refreshUser, accessToken, user }}
+      value={{ login, logout, refreshUser, accessToken, user, isLoading }}
     >
       {children}
     </AuthContext.Provider>
