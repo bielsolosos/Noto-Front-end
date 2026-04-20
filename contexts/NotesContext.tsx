@@ -12,6 +12,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -40,6 +41,7 @@ interface NotesContextType {
   editTitle: string;
   editContent: string;
   hasUnsavedChanges: boolean;
+  isSaving: boolean;
   // Actions
   setSelectedPageId: (pageId: string | null) => void;
   createNewPage: () => Promise<void>;
@@ -53,6 +55,7 @@ interface NotesContextType {
   startEditing: () => void;
   cancelEdit: () => void;
   savePage: () => Promise<void>;
+  autoSavePage: () => Promise<void>;
   handleTitleChange: (title: string) => void;
   handleContentChange: (content: string) => void;
 }
@@ -77,6 +80,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   const [editTitle, setEditTitle] = useState("");
   const [editContent, setEditContent] = useState("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const filteredPageSummaries = useMemo(
     () => filterPageSummariesByQuery(pageSummaries, searchQuery),
@@ -123,12 +127,19 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     return pages[0]?.id ?? null;
   };
 
+  const prevPageIdRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (selectedPage) {
-      setEditTitle(selectedPage.title);
-      setEditContent(selectedPage.content);
-      setHasUnsavedChanges(false);
-      setIsEditing(false);
+      if (selectedPage.id !== prevPageIdRef.current) {
+        setEditTitle(selectedPage.title);
+        setEditContent(selectedPage.content);
+        setHasUnsavedChanges(false);
+        setIsEditing(false);
+        prevPageIdRef.current = selectedPage.id;
+      }
+    } else {
+      prevPageIdRef.current = null;
     }
   }, [selectedPage]);
 
@@ -251,7 +262,8 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
   const updatePageApi = async (
     pageId: string,
-    data: { title: string; content: string }
+    data: { title: string; content: string },
+    silent: boolean = false
   ) => {
     try {
       const response = await api.put<Page>(`api/pages/${pageId}`, data);
@@ -274,9 +286,13 @@ export function NotesProvider({ children }: { children: ReactNode }) {
         )
       );
 
-      toast.success("Página atualizada com sucesso");
+      if (!silent) {
+        toast.success("Página atualizada com sucesso");
+      }
     } catch (error) {
-      toast.error("Erro ao atualizar página");
+      if (!silent) {
+        toast.error("Erro ao atualizar página");
+      }
       throw error;
     }
   };
@@ -301,6 +317,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     }
 
     try {
+      setIsSaving(true);
       await updatePageApi(selectedPage.id, {
         title: editTitle,
         content: editContent,
@@ -309,6 +326,31 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       setIsEditing(false);
     } catch (error) {
       // Error já tratado no updatePageApi
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const autoSavePage = async () => {
+    if (!selectedPage || !hasUnsavedChanges) {
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      await updatePageApi(
+        selectedPage.id,
+        {
+          title: editTitle,
+          content: editContent,
+        },
+        true // silent parameter
+      );
+      setHasUnsavedChanges(false);
+    } catch (error) {
+      // Error já tratado no updatePageApi
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -343,6 +385,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
         editTitle,
         editContent,
         hasUnsavedChanges,
+        isSaving,
         setSelectedPageId: setSelectedPageIdWithUrl,
         createNewPage,
         deletePage,
@@ -351,6 +394,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
         startEditing,
         cancelEdit,
         savePage,
+        autoSavePage,
         handleTitleChange,
         handleContentChange,
       }}
