@@ -51,10 +51,13 @@ api.interceptors.response.use(
           refreshToken,
         });
 
-        const newAccessToken = res.data.accessToken;
-        localStorage.setItem("accessToken", newAccessToken);
+        const { token, refreshToken: newRefreshToken } = res.data;
+        localStorage.setItem("accessToken", token);
+        if (newRefreshToken) {
+          localStorage.setItem("refreshToken", newRefreshToken);
+        }
 
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        originalRequest.headers.Authorization = `Bearer ${token}`;
         return api(originalRequest);
       } catch (refreshError) {
         localStorage.removeItem("accessToken");
