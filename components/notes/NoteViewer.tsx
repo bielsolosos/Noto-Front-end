@@ -4,7 +4,7 @@ import { ContentSkeleton } from "@/components/skeletons/ContentSkeleton";
 import { useNotes } from "@/contexts/NotesContext";
 import { parseMarkdown } from "@/lib/markdownParser";
 import DOMPurify from "dompurify";
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 
 export function NoteViewer() {
   const { selectedPage, isLoadingPage } = useNotes();
@@ -16,6 +16,20 @@ export function NoteViewer() {
     const parsed = parseMarkdown(selectedPage.content);
     return DOMPurify.sanitize(parsed);
   }, [selectedPage?.content]);
+
+  const handleContentClick = useCallback((e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    const imgContainer = target.closest('.markdown-img-container') as HTMLElement;
+    
+    if (imgContainer) {
+      const src = imgContainer.getAttribute('data-image-src');
+      const alt = imgContainer.getAttribute('data-image-alt');
+      
+      if (src && window.openImageModal) {
+        window.openImageModal(src, alt || '');
+      }
+    }
+  }, []);
 
   if (isLoadingPage) {
     return <ContentSkeleton />;
@@ -45,6 +59,7 @@ export function NoteViewer() {
         <div
           className="prose prose-sm md:prose prose-neutral dark:prose-invert max-w-none"
           dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+          onClick={handleContentClick}
         />
       </div>
     </div>

@@ -22,6 +22,7 @@ import {
   Maximize2,
   Minimize2,
   Quote,
+  Save,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
@@ -68,18 +69,32 @@ export function NoteEditor() {
     }
   }, [previewMode]);
 
+  const [isAutoSaveEnabled, setIsAutoSaveEnabled] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("noteAutoSave");
+      return saved !== null ? saved === "true" : true;
+    }
+    return true;
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("noteAutoSave", isAutoSaveEnabled.toString());
+    }
+  }, [isAutoSaveEnabled]);
+
   // Auto-save usando um custom hook
   const debouncedAutoSave = useDebouncedCallback(() => {
-    if (hasUnsavedChanges) {
+    if (hasUnsavedChanges && isAutoSaveEnabled) {
       autoSavePage();
     }
   }, 2000);
 
   useEffect(() => {
-    if (hasUnsavedChanges) {
+    if (hasUnsavedChanges && isAutoSaveEnabled) {
       debouncedAutoSave();
     }
-  }, [editContent, editTitle, hasUnsavedChanges, debouncedAutoSave]);
+  }, [editContent, editTitle, hasUnsavedChanges, isAutoSaveEnabled, debouncedAutoSave]);
 
   // Sistema de Undo/Redo
   const [history, setHistory] = useState<string[]>([editContent]);
@@ -240,6 +255,20 @@ export function NoteEditor() {
     },
     [getImageFileFromClipboard, insertTextAtCursor, isUploadingImage]
   );
+
+  const handleContentClick = useCallback((e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    const imgContainer = target.closest('.markdown-img-container') as HTMLElement;
+    
+    if (imgContainer) {
+      const src = imgContainer.getAttribute('data-image-src');
+      const alt = imgContainer.getAttribute('data-image-alt');
+      
+      if (src && window.openImageModal) {
+        window.openImageModal(src, alt || '');
+      }
+    }
+  }, []);
 
   // Função inteligente para handling de Enter
   const handleKeyPress = useCallback(
@@ -585,6 +614,27 @@ export function NoteEditor() {
                 {renderSaveStatus()}
               </span>
               <Button
+                variant={isAutoSaveEnabled ? "outline" : "secondary"}
+                size="sm"
+                onClick={() => setIsAutoSaveEnabled(!isAutoSaveEnabled)}
+                className="flex items-center gap-2"
+                title="Alternar Auto-Save"
+              >
+                <Save className="w-4 h-4" />
+                {isAutoSaveEnabled ? "Auto-Save: ON" : "Auto-Save: OFF"}
+              </Button>
+              {!isAutoSaveEnabled && hasUnsavedChanges && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => autoSavePage()}
+                  className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  <Save className="w-4 h-4" />
+                  Salvar
+                </Button>
+              )}
+              <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsFullscreen(!isFullscreen)}
@@ -734,6 +784,7 @@ export function NoteEditor() {
                     ? parseMarkdown(editContent)
                     : "<p class='text-muted-foreground italic'>Preview aparecerá aqui quando você escrever algo...</p>",
                 }}
+                onClick={handleContentClick}
               />
             </div>
           )}
@@ -772,6 +823,7 @@ export function NoteEditor() {
                         ? parseMarkdown(editContent)
                         : "<p class='text-muted-foreground italic'>Preview aparecerá aqui...</p>",
                     }}
+                    onClick={handleContentClick}
                   />
                 </div>
               </div>

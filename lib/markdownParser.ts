@@ -1,138 +1,149 @@
+import MarkdownIt from "markdown-it";
+import hljs from "highlight.js";
+
+const md = new MarkdownIt({
+  html: true, // Enable HTML tags in source
+  linkify: true, // Autoconvert URL-like text to links
+  typographer: true, // Enable some language-neutral replacement + quotes beautification
+  highlight: function (str, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return (
+          '<pre class="markdown-code-block"><code class="hljs">' +
+          hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
+          "</code></pre>"
+        );
+      } catch (__) {}
+    }
+
+    return (
+      '<pre class="markdown-code-block"><code class="hljs">' +
+      md.utils.escapeHtml(str) +
+      "</code></pre>"
+    );
+  },
+});
+
+// Custom Renderer para adicionar classes customizadas aos tokens principais
+// @ts-expect-error
+md.renderer.rules.heading_open = function (tokens, idx, options, env, self) {
+  const token = tokens[idx];
+  const level = token.tag.slice(1);
+  token.attrJoin("class", `markdown-h${level}`);
+  return self.renderToken(tokens, idx, options);
+};
+
+// @ts-expect-error
+md.renderer.rules.paragraph_open = function (tokens, idx, options, env, self) {
+  tokens[idx].attrJoin("class", "markdown-paragraph");
+  return self.renderToken(tokens, idx, options);
+};
+
+// @ts-expect-error
+md.renderer.rules.link_open = function (tokens, idx, options, env, self) {
+  tokens[idx].attrJoin("class", "markdown-link");
+  tokens[idx].attrJoin("target", "_blank");
+  tokens[idx].attrJoin("rel", "noopener noreferrer");
+  return self.renderToken(tokens, idx, options);
+};
+
+// @ts-expect-error
+md.renderer.rules.blockquote_open = function (tokens, idx, options, env, self) {
+  tokens[idx].attrJoin("class", "markdown-blockquote");
+  return self.renderToken(tokens, idx, options);
+};
+
+// @ts-expect-error
+md.renderer.rules.bullet_list_open = function (tokens, idx, options, env, self) {
+  tokens[idx].attrJoin("class", "markdown-ul");
+  return self.renderToken(tokens, idx, options);
+};
+
+// @ts-expect-error
+md.renderer.rules.ordered_list_open = function (tokens, idx, options, env, self) {
+  tokens[idx].attrJoin("class", "markdown-ol");
+  return self.renderToken(tokens, idx, options);
+};
+
+// @ts-expect-error
+md.renderer.rules.list_item_open = function (tokens, idx, options, env, self) {
+  tokens[idx].attrJoin("class", "markdown-li");
+  return self.renderToken(tokens, idx, options);
+};
+
+// @ts-expect-error
+md.renderer.rules.table_open = function (tokens, idx, options, env, self) {
+  tokens[idx].attrJoin("class", "markdown-table");
+  return self.renderToken(tokens, idx, options);
+};
+
+// @ts-expect-error
+md.renderer.rules.th_open = function (tokens, idx, options, env, self) {
+  tokens[idx].attrJoin("class", "markdown-td");
+  return self.renderToken(tokens, idx, options);
+};
+
+// @ts-expect-error
+md.renderer.rules.td_open = function (tokens, idx, options, env, self) {
+  tokens[idx].attrJoin("class", "markdown-td");
+  return self.renderToken(tokens, idx, options);
+};
+
+// @ts-expect-error
+md.renderer.rules.hr = function (tokens, idx, options, env, self) {
+  return '<hr class="markdown-hr" />\n';
+};
+
+// @ts-expect-error
+md.renderer.rules.strong_open = function (tokens, idx, options, env, self) {
+  tokens[idx].attrJoin("class", "markdown-strong");
+  return self.renderToken(tokens, idx, options);
+};
+
+// @ts-expect-error
+md.renderer.rules.em_open = function (tokens, idx, options, env, self) {
+  tokens[idx].attrJoin("class", "markdown-em");
+  return self.renderToken(tokens, idx, options);
+};
+
+// @ts-expect-error
+md.renderer.rules.s_open = function (tokens, idx, options, env, self) {
+  tokens[idx].attrJoin("class", "markdown-del");
+  return self.renderToken(tokens, idx, options);
+};
+
+// @ts-expect-error
+md.renderer.rules.code_inline = function (tokens, idx, options, env, self) {
+  const token = tokens[idx];
+  return `<code class="markdown-code-inline">${md.utils.escapeHtml(token.content)}</code>`;
+};
+
+// Custom rule for images with modal
+// @ts-expect-error
+md.renderer.rules.image = function (tokens, idx, options, env, self) {
+  const token = tokens[idx];
+  const srcIndex = token.attrIndex("src");
+  const src = srcIndex >= 0 && token.attrs ? token.attrs[srcIndex][1] : "";
+  const alt = token.content || "";
+
+  return `<div class="markdown-img-container" data-image-src="${src}" data-image-alt="${alt}"><img src="${src}" alt="${alt}" class="markdown-img" /><div class="markdown-img-overlay"><span class="markdown-img-zoom-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-6-6m6 6v-4.8m0 4.8h-4.8"/><path d="M3 16.2V21m0 0h4.8M3 21l6-6"/><path d="M21 7.8V3m0 0h-4.8M21 3l-6 6"/><path d="M3 7.8V3m0 0h4.8M3 3l6 6"/></svg></span></div></div>`;
+};
+
 export function parseMarkdown(markdown: string): string {
-  let html = markdown;
+  let rawHtml = md.render(markdown || "");
 
-  // Headers - usando classes customizadas
-  html = html.replace(/^######\s+(.*$)/gim, "<h6 class='markdown-h6'>$1</h6>");
-  html = html.replace(/^#####\s+(.*$)/gim, "<h5 class='markdown-h5'>$1</h5>");
-  html = html.replace(/^####\s+(.*$)/gim, "<h4 class='markdown-h4'>$1</h4>");
-  html = html.replace(/^###\s+(.*$)/gim, "<h3 class='markdown-h3'>$1</h3>");
-  html = html.replace(/^##\s+(.*$)/gim, "<h2 class='markdown-h2'>$1</h2>");
-  html = html.replace(/^#\s+(.*$)/gim, "<h1 class='markdown-h1'>$1</h1>");
-
-  // Bold e Italic - usando classes customizadas
-  html = html.replace(
-    /\*\*\*(.*?)\*\*\*/gim,
-    "<strong class='markdown-strong'><em class='markdown-em'>$1</em></strong>"
-  );
-  html = html.replace(
-    /\*\*(.*?)\*\*/gim,
-    "<strong class='markdown-strong'>$1</strong>"
-  );
-  html = html.replace(/\*(.*?)\*/gim, "<em class='markdown-em'>$1</em>");
-
-  // Code blocks - usando classes customizadas
-  html = html.replace(
-    /```(\w+)?\n([\s\S]*?)```/gim,
-    '<pre class="markdown-code-block"><code>$2</code></pre>'
-  );
-  html = html.replace(
-    /```\n([\s\S]*?)```/gim,
-    '<pre class="markdown-code-block"><code>$1</code></pre>'
-  );
-
-  // Inline code
-  html = html.replace(
-    /`([^`]+)`/gim,
-    '<code class="markdown-code-inline">$1</code>'
-  );
-
-  // Images (ANTES dos links para não conflitar)
-  html = html.replace(
-    /!\[([^\]]*)\]\(([^)]+)\)/gim,
-    '<div class="markdown-img-container" onclick="openImageModal(\'$2\', \'$1\')"><img src="$2" alt="$1" class="markdown-img" /><div class="markdown-img-overlay"><span class="markdown-img-zoom-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-6-6m6 6v-4.8m0 4.8h-4.8"/><path d="M3 16.2V21m0 0h4.8M3 21l6-6"/><path d="M21 7.8V3m0 0h-4.8M21 3l-6 6"/><path d="M3 7.8V3m0 0h4.8M3 3l6 6"/></svg></span></div></div>'
-  );
-
-  // Links
-  html = html.replace(
-    /\[([^\]]+)\]\(([^)]+)\)/gim,
-    '<a href="$2" target="_blank" rel="noopener noreferrer" class="markdown-link">$1</a>'
-  );
-
-  // Blockquotes
-  html = html.replace(
-    /^> (.*$)/gim,
-    '<blockquote class="markdown-blockquote">$1</blockquote>'
-  );
-
-  // Horizontal rule
-  html = html.replace(/^---$/gim, '<hr class="markdown-hr" />');
-
-  // Task lists (checkboxes) - usando classes customizadas
-  html = html.replace(
-    /^- \[x\] (.*$)/gim,
+  // Post-processing for simple task lists
+  rawHtml = rawHtml.replace(
+    /<li class="markdown-li">\[x\] (.*?)<\/li>/gim,
     '<div class="markdown-task-item"><input type="checkbox" checked disabled class="markdown-task-checkbox"><span class="markdown-task-text-completed">$1</span></div>'
   );
-  html = html.replace(
-    /^- \[ \] (.*$)/gim,
+  rawHtml = rawHtml.replace(
+    /<li class="markdown-li">\[ \] (.*?)<\/li>/gim,
     '<div class="markdown-task-item"><input type="checkbox" disabled class="markdown-task-checkbox"><span class="markdown-task-text">$1</span></div>'
   );
 
-  // Numbered lists
-  html = html.replace(
-    /^\d+\. (.*$)/gim,
-    '<li class="markdown-li numbered-item">$1</li>'
-  );
-
-  // Regular unordered lists (depois das task lists)
-  html = html.replace(
-    /^- (.*$)/gim,
-    '<li class="markdown-li unordered-item">$1</li>'
-  );
-
-  // Tables - corrigir regex para capturar corretamente
-  html = html.replace(/^\|(.+)\|/gim, (match, content) => {
-    const cells = content
-      .split("|")
-      .map((cell: string) => cell.trim())
-      .filter((cell: string) => cell);
-    return `TABLE_ROW${cells
-      .map((cell: string) => `<td class="markdown-td">${cell}</td>`)
-      .join("")}END_TABLE_ROW`;
-  });
-
-  // Strikethrough
-  html = html.replace(/~~(.*?)~~/gim, "<del class='markdown-del'>$1</del>");
-
-  // Agrupar listas numeradas
-  html = html.replace(
-    /(<li class="markdown-li numbered-item">.*?<\/li>(\s*<li class="markdown-li numbered-item">.*?<\/li>)*)/gim,
-    '<ol class="markdown-ol">$1</ol>'
-  );
-  html = html.replace(/ numbered-item/g, "");
-
-  // Agrupar listas não ordenadas
-  html = html.replace(
-    /(<li class="markdown-li unordered-item">.*?<\/li>(\s*<li class="markdown-li unordered-item">.*?<\/li>)*)/gim,
-    '<ul class="markdown-ul">$1</ul>'
-  );
-  html = html.replace(/ unordered-item/g, "");
-
-  // Agrupar task lists
-  html = html.replace(
-    /(<div class="markdown-task-item">.*?<\/div>(\s*<div class="markdown-task-item">.*?<\/div>)*)/gim,
-    '<div class="markdown-task-container">$1</div>'
-  );
-
-  // Agrupar tabelas PRIMEIRO (antes de processar quebras)
-  html = html.replace(
-    /(TABLE_ROW.*?END_TABLE_ROW(\s*TABLE_ROW.*?END_TABLE_ROW)*)/gim,
-    (match) => {
-      const rows = match.replace(/TABLE_ROW(.*?)END_TABLE_ROW/g, "<tr>$1</tr>");
-      return `<table class="markdown-table"><tbody>${rows}</tbody></table>`;
-    }
-  );
-
-  // Processar quebras de linha com mais cuidado
-  // Apenas duplas quebras viram parágrafos, quebras simples viram <br> só quando necessário
-  html = html.replace(/\n\n+/gim, "</p><p class='markdown-paragraph'>");
-
-  // Quebras simples apenas em texto livre (não em elementos HTML)
-  html = html.replace(/\n(?![<\s])/gim, "<br>");
-
   // Wrap em div principal
-  html = `<div class='markdown-content'><p class='markdown-paragraph'>${html}</p></div>`;
-
-  return html;
+  return `<div class='markdown-content'>${rawHtml}</div>`;
 }
 
 // Função para abrir modal de imagem
