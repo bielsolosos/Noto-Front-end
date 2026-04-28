@@ -1,11 +1,11 @@
 import MarkdownIt from "markdown-it";
 import hljs from "highlight.js";
 
-const md = new MarkdownIt({
+const md: MarkdownIt = new MarkdownIt({
   html: true, // Enable HTML tags in source
   linkify: true, // Autoconvert URL-like text to links
   typographer: true, // Enable some language-neutral replacement + quotes beautification
-  highlight: function (str, lang) {
+  highlight: function (str: string, lang: string): string {
     if (lang && hljs.getLanguage(lang)) {
       try {
         return (
@@ -25,7 +25,6 @@ const md = new MarkdownIt({
 });
 
 // Custom Renderer para adicionar classes customizadas aos tokens principais
-// @ts-expect-error
 md.renderer.rules.heading_open = function (tokens, idx, options, env, self) {
   const token = tokens[idx];
   const level = token.tag.slice(1);
@@ -33,13 +32,11 @@ md.renderer.rules.heading_open = function (tokens, idx, options, env, self) {
   return self.renderToken(tokens, idx, options);
 };
 
-// @ts-expect-error
 md.renderer.rules.paragraph_open = function (tokens, idx, options, env, self) {
   tokens[idx].attrJoin("class", "markdown-paragraph");
   return self.renderToken(tokens, idx, options);
 };
 
-// @ts-expect-error
 md.renderer.rules.link_open = function (tokens, idx, options, env, self) {
   tokens[idx].attrJoin("class", "markdown-link");
   tokens[idx].attrJoin("target", "_blank");
@@ -47,79 +44,66 @@ md.renderer.rules.link_open = function (tokens, idx, options, env, self) {
   return self.renderToken(tokens, idx, options);
 };
 
-// @ts-expect-error
 md.renderer.rules.blockquote_open = function (tokens, idx, options, env, self) {
   tokens[idx].attrJoin("class", "markdown-blockquote");
   return self.renderToken(tokens, idx, options);
 };
 
-// @ts-expect-error
 md.renderer.rules.bullet_list_open = function (tokens, idx, options, env, self) {
   tokens[idx].attrJoin("class", "markdown-ul");
   return self.renderToken(tokens, idx, options);
 };
 
-// @ts-expect-error
 md.renderer.rules.ordered_list_open = function (tokens, idx, options, env, self) {
   tokens[idx].attrJoin("class", "markdown-ol");
   return self.renderToken(tokens, idx, options);
 };
 
-// @ts-expect-error
 md.renderer.rules.list_item_open = function (tokens, idx, options, env, self) {
   tokens[idx].attrJoin("class", "markdown-li");
   return self.renderToken(tokens, idx, options);
 };
 
-// @ts-expect-error
 md.renderer.rules.table_open = function (tokens, idx, options, env, self) {
   tokens[idx].attrJoin("class", "markdown-table");
   return self.renderToken(tokens, idx, options);
 };
 
-// @ts-expect-error
 md.renderer.rules.th_open = function (tokens, idx, options, env, self) {
   tokens[idx].attrJoin("class", "markdown-td");
   return self.renderToken(tokens, idx, options);
 };
 
-// @ts-expect-error
 md.renderer.rules.td_open = function (tokens, idx, options, env, self) {
   tokens[idx].attrJoin("class", "markdown-td");
   return self.renderToken(tokens, idx, options);
 };
 
-// @ts-expect-error
 md.renderer.rules.hr = function (tokens, idx, options, env, self) {
   return '<hr class="markdown-hr" />\n';
 };
 
-// @ts-expect-error
 md.renderer.rules.strong_open = function (tokens, idx, options, env, self) {
   tokens[idx].attrJoin("class", "markdown-strong");
   return self.renderToken(tokens, idx, options);
 };
 
-// @ts-expect-error
 md.renderer.rules.em_open = function (tokens, idx, options, env, self) {
   tokens[idx].attrJoin("class", "markdown-em");
   return self.renderToken(tokens, idx, options);
 };
 
-// @ts-expect-error
 md.renderer.rules.s_open = function (tokens, idx, options, env, self) {
   tokens[idx].attrJoin("class", "markdown-del");
   return self.renderToken(tokens, idx, options);
 };
 
-// @ts-expect-error
 md.renderer.rules.code_inline = function (tokens, idx, options, env, self) {
   const token = tokens[idx];
   return `<code class="markdown-code-inline">${md.utils.escapeHtml(token.content)}</code>`;
 };
 
 // Custom rule for images with modal
-// @ts-expect-error
 md.renderer.rules.image = function (tokens, idx, options, env, self) {
   const token = tokens[idx];
   const srcIndex = token.attrIndex("src");
