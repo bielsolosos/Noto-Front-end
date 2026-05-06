@@ -21,6 +21,26 @@ api.interceptors.request.use(
 );
 
 // Interceptor para lidar com token expirado
+interface QueueItem {
+  resolve: (value: string | null) => void;
+  reject: (reason?: unknown) => void;
+}
+
+let isRefreshing = false;
+let failedQueue: QueueItem[] = [];
+
+const processQueue = (error: unknown, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+
+  failedQueue = [];
+};
+
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
@@ -37,14 +57,28 @@ api.interceptors.response.use(
         return Promise.reject(error);
       }
 
-      originalRequest._retry = true;
-
       const refreshToken = localStorage.getItem("refreshToken");
       if (!refreshToken) {
         toast.error("Sessão expirada. Faça login novamente.");
         window.location.href = "/";
         return Promise.reject(error);
       }
+
+      if (isRefreshing) {
+        return new Promise<string | null>(function (resolve, reject) {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return api(originalRequest);
+          })
+          .catch((err) => {
+            return Promise.reject(err);
+          });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
 
       try {
         const res = await axios.post(`${apiUrl}/api/auth/refresh`, {
@@ -57,14 +91,19 @@ api.interceptors.response.use(
           localStorage.setItem("refreshToken", newRefreshToken);
         }
 
+        processQueue(null, token);
+
         originalRequest.headers.Authorization = `Bearer ${token}`;
         return api(originalRequest);
       } catch (refreshError) {
+        processQueue(refreshError, null);
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
         toast.error("Não foi possível renovar a sessão. Faça login novamente.");
         window.location.href = "/";
         return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
 
