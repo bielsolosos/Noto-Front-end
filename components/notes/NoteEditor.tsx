@@ -5,6 +5,49 @@ import { Input } from "@/components/ui/input";
 import { useNotes } from "@/contexts/NotesContext";
 import { parseMarkdown } from "@/lib/markdownParser";
 import { uploadMedia } from "@/lib/media";
+/**
+ * NOTO - Note Editor Component (v2.0 - CodeMirror 6 Migration)
+ * -----------------------------------------------------------
+ * Este componente é o coração da edição no Noto. Ele utiliza o CodeMirror 6
+ * como motor principal para garantir performance, conformidade com CommonMark
+ * e uma experiência de escrita "premium".
+ * 
+ * ARQUITETURA E FLUXO:
+ * 
+ * 1. MOTOR (CodeMirror 6):
+ *    - O editor é inicializado via `useEffect` no container `editorRef`.
+ *    - Utilizamos `EditorView` para o DOM e `EditorState` para a lógica.
+ *    - Extensões principais: history (undo/redo), markdown (CommonMark), 
+ *      syntaxHighlighting (estilo customizado) e o tema One Dark adaptado.
+ * 
+ * 2. SINCRONIZAÇÃO DE ESTADO:
+ *    - Bidirecional: 
+ *      a) Editor -> Contexto: O `updateListener` detecta mudanças no doc e chama `handleContentChange`.
+ *      b) Contexto -> Editor: Um `useEffect` observa `editContent` (ex: ao carregar uma nota) 
+ *         e despacha uma transação de mudança se o conteúdo divergir.
+ * 
+ * 3. SCROLL SINCRONIZADO (Bidirecional):
+ *    - O scroll é baseado em porcentagem relativa.
+ *    - `scrollSourceRef` e `previewModeRef` são usados para evitar loops infinitos 
+ *      de eventos quando um lado "empurra" o scroll do outro.
+ *    - O editor permanece montado (mesmo que oculto) para preservar estado e foco.
+ * 
+ * 4. BARRA DE FERRAMENTAS E ATALHOS:
+ *    - Utilizamos uma "Ponte de Comandos": A UI (Shadcn) e o `keymap` chamam as 
+ *      mesmas funções (`insertBold`, `insertH1`, etc).
+ *    - Estas funções usam `view.dispatch()` para manipular o texto via transações, 
+ *      garantindo que o histórico de Undo/Redo funcione perfeitamente.
+ * 
+ * 5. DESIGN (Pure Black):
+ *    - O tema é dinâmico via `next-themes`.
+ *    - No modo escuro, forçamos `backgroundColor: transparent` para herdar o 
+ *      preto absoluto (#000000) da aplicação, otimizando o contraste.
+ * 
+ * 6. MULTIMÍDIA:
+ *    - O `handlePaste` intercepta imagens do clipboard e faz o upload automático,
+ *      inserindo o link Markdown no local exato do cursor.
+ */
+
 import {
   Bold,
   Code,
@@ -24,9 +67,36 @@ import {
   Quote,
   Save,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
 import { toast } from "sonner";
+import { useTheme } from "next-themes";
+
+// CodeMirror imports
+import { EditorState, Transaction, EditorSelection } from "@codemirror/state";
+import { EditorView, keymap, highlightActiveLine, scrollPastEnd } from "@codemirror/view";
+import { defaultKeymap, history, historyKeymap, undo as cmUndo, redo as cmRedo } from "@codemirror/commands";
+import { markdown, commonmarkLanguage } from "@codemirror/lang-markdown";
+import { languages } from "@codemirror/language-data";
+import { syntaxHighlighting, defaultHighlightStyle, HighlightStyle, syntaxHighlighting as createSyntaxHighlighting } from "@codemirror/language";
+import { oneDark } from "@codemirror/theme-one-dark";
+import { tags as t } from "@lezer/highlight";
+
+// Função utilitária fora do componente para evitar que o React Compiler 
+// reclame de mutação direta de DOM em refs.
+const performScrollSync = (
+  source: "editor" | "preview",
+  editorScrollDOM: HTMLElement,
+  previewDOM: HTMLElement
+) => {
+  if (source === "editor") {
+    const scrollPercentage = editorScrollDOM.scrollTop / (editorScrollDOM.scrollHeight - editorScrollDOM.clientHeight);
+    previewDOM.scrollTop = scrollPercentage * (previewDOM.scrollHeight - previewDOM.clientHeight);
+  } else {
+    const scrollPercentage = previewDOM.scrollTop / (previewDOM.scrollHeight - previewDOM.clientHeight);
+    editorScrollDOM.scrollTop = scrollPercentage * (editorScrollDOM.scrollHeight - editorScrollDOM.clientHeight);
+  }
+};
 
 export function NoteEditor() {
   const {
@@ -55,7 +125,6 @@ export function NoteEditor() {
   );
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const scrollSourceRef = useRef<"editor" | "preview" | null>(null);
   const editContentRef = useRef(editContent);
@@ -85,6 +154,14 @@ export function NoteEditor() {
     }
   }, [isAutoSaveEnabled]);
 
+  const { resolvedTheme } = useTheme();
+
+  // Refs para sincronização de estado sem causar re-render do editor
+  const previewModeRef = useRef(previewMode);
+  useEffect(() => {
+    previewModeRef.current = previewMode;
+  }, [previewMode]);
+
   // Auto-save usando um custom hook
   const debouncedAutoSave = useDebouncedCallback(() => {
     if (hasUnsavedChanges && isAutoSaveEnabled) {
@@ -98,98 +175,49 @@ export function NoteEditor() {
     }
   }, [editContent, editTitle, hasUnsavedChanges, isAutoSaveEnabled, debouncedAutoSave]);
 
-  // Sistema de Undo/Redo
-  const [history, setHistory] = useState<string[]>([editContent]);
-  const [historyIndex, setHistoryIndex] = useState(0);
-  const [isUndoRedo, setIsUndoRedo] = useState(false);
+  // Refs para o CodeMirror
+  const editorRef = useRef<HTMLDivElement>(null);
+  const viewRef = useRef<EditorView | null>(null);
 
-  // Adicionar ao histórico apenas quando não é undo/redo
-  useEffect(() => {
-    if (!isUndoRedo && editContent !== history[historyIndex]) {
-      const newHistory = history.slice(0, historyIndex + 1);
-      newHistory.push(editContent);
-
-      // Limitar histórico a 50 entradas para performance
-      if (newHistory.length > 50) {
-        newHistory.shift();
-      } else {
-        setHistoryIndex(historyIndex + 1);
-      }
-
-      setHistory(newHistory);
-    }
-    setIsUndoRedo(false);
-  }, [editContent, history, historyIndex, isUndoRedo]);
-
-  // Funções de Undo/Redo
+  // Funções de Undo/Redo usando CodeMirror
   const undo = useCallback(() => {
-    if (historyIndex > 0) {
-      setIsUndoRedo(true);
-      setHistoryIndex(historyIndex - 1);
-      handleContentChange(history[historyIndex - 1]);
+    if (viewRef.current) {
+      cmUndo(viewRef.current);
     }
-  }, [historyIndex, history, handleContentChange]);
+  }, []);
 
   const redo = useCallback(() => {
-    if (historyIndex < history.length - 1) {
-      setIsUndoRedo(true);
-      setHistoryIndex(historyIndex + 1);
-      handleContentChange(history[historyIndex + 1]);
+    if (viewRef.current) {
+      cmRedo(viewRef.current);
     }
-  }, [historyIndex, history, handleContentChange]);
+  }, []);
 
-  // Função para inserir texto no cursor
-  const insertTextAtCursor = useCallback(
-    (
-      beforeText: string,
-      afterText: string = "",
-      selectText: boolean = false
-    ) => {
-      if (!textareaRef.current) return;
+  // Função para inserir texto no CodeMirror
+  const insertTextAtCursor = (
+    beforeText: string,
+    afterText: string = "",
+    selectText: boolean = false
+  ) => {
+    if (!viewRef.current) return;
 
-      const textarea = textareaRef.current;
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const currentContent = editContentRef.current;
-      const selectedText = currentContent.substring(start, end);
+    const view = viewRef.current;
+    const { state, dispatch } = view;
+    
+    const changes = state.changeByRange((range) => {
+      const selectedText = state.sliceDoc(range.from, range.to);
+      const insertion = selectText && selectedText
+        ? beforeText + selectedText + afterText
+        : beforeText + afterText;
+        
+      return {
+        range: EditorSelection.cursor(range.from + beforeText.length + (selectText && selectedText ? selectedText.length : 0)),
+        changes: { from: range.from, to: range.to, insert: insertion }
+      };
+    });
 
-      // Salvar a posição do scroll atual
-      const scrollTop = textarea.scrollTop;
-      const scrollLeft = textarea.scrollLeft;
-
-      const newText =
-        selectText && selectedText
-          ? beforeText + selectedText + afterText
-          : beforeText + afterText;
-
-      const newContent =
-        currentContent.substring(0, start) +
-        newText +
-        currentContent.substring(end);
-
-      handleContentChange(newContent);
-
-      // Reposicionar cursor preservando o scroll
-      setTimeout(() => {
-        const newCursorPos =
-          selectText && selectedText
-            ? start + beforeText.length + selectedText.length + afterText.length
-            : start + beforeText.length;
-
-        // Restaurar scroll antes de focar
-        textarea.scrollTop = scrollTop;
-        textarea.scrollLeft = scrollLeft;
-
-        textarea.focus();
-        textarea.setSelectionRange(newCursorPos, newCursorPos);
-
-        // Garantir que o scroll seja mantido após o focus
-        textarea.scrollTop = scrollTop;
-        textarea.scrollLeft = scrollLeft;
-      }, 0);
-    },
-    [handleContentChange]
-  );
+    dispatch(state.update(changes, { scrollIntoView: true, userEvent: "input" }));
+    view.focus();
+  };
 
   // Funções para formatação
   const insertBold = () => insertTextAtCursor("**", "**", true);
@@ -222,43 +250,177 @@ export function NoteEditor() {
   }, []);
 
   // Interceptor de Ctrl+V para upload de imagens
-  const handlePaste = useCallback(
-    async (e: ClipboardEvent) => {
-      const textarea = textareaRef.current;
-      if (!textarea || document.activeElement !== textarea) {
-        return;
+  const handlePaste = async (e: ClipboardEvent) => {
+    const imageFile = getImageFileFromClipboard(e);
+    if (!imageFile) {
+      return;
+    }
+
+    e.preventDefault();
+
+    if (isUploadingImage) {
+      return;
+    }
+
+    setIsUploadingImage(true);
+    const uploadToastId = toast.loading("Enviando imagem...");
+
+    try {
+      const mediaResponse = await uploadMedia(imageFile);
+      insertTextAtCursor(mediaResponse.markdown, "");
+      toast.success("Imagem enviada com sucesso", { id: uploadToastId });
+    } catch {
+      toast.error("Erro ao enviar imagem. Tente novamente.", {
+        id: uploadToastId,
+      });
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+    // Função para sincronizar o scroll no modo split (Bidirecional)
+  const handleScroll = (source: "editor" | "preview") => {
+    if (previewModeRef.current !== "split" || !previewRef.current || !viewRef.current) return;
+
+    // Se o scroll foi disparado programaticamente por uma sincronização, ignora para evitar loop infinito
+    if (scrollSourceRef.current && scrollSourceRef.current !== source) {
+      scrollSourceRef.current = null; 
+      return;
+    }
+
+    scrollSourceRef.current = source;
+    
+    // Obter o elemento de scroll do CodeMirror
+    const editorScrollDOM = viewRef.current.scrollDOM;
+    
+    // Executar a sincronia via função externa para não irritar o React Compiler
+    performScrollSync(source, editorScrollDOM, previewRef.current);
+
+    setTimeout(() => {
+      if (scrollSourceRef.current === source) {
+        scrollSourceRef.current = null;
       }
+    }, 50);
+  };
 
-      const imageFile = getImageFileFromClipboard(e);
-      if (!imageFile) {
-        return;
-      }
 
-      e.preventDefault();
+  // Inicialização do CodeMirror
+  useEffect(() => {
+    if (!editorRef.current) return;
 
-      if (isUploadingImage) {
-        return;
-      }
+    // Estilo customizado para links e tarefas (mais legível no dark mode)
+    const customHighlightStyle = HighlightStyle.define([
+      { tag: t.link, color: resolvedTheme === "dark" ? "#61afef" : "#0969da", textDecoration: "underline" },
+      { tag: t.url, color: resolvedTheme === "dark" ? "#abb2bf" : "#57606a", opacity: 0.7 },
+      { tag: t.heading1, fontWeight: "bold", fontSize: "1.4em", color: resolvedTheme === "dark" ? "#e06c75" : "#cf222e" },
+      { tag: t.heading2, fontWeight: "bold", fontSize: "1.2em", color: resolvedTheme === "dark" ? "#d19a66" : "#953800" },
+      { tag: t.strikethrough, textDecoration: "line-through" },
+      { tag: t.meta, color: resolvedTheme === "dark" ? "#c678dd" : "#8250df" }, // Tasks [-] [x]
+    ]);
 
-      setIsUploadingImage(true);
-      const uploadToastId = toast.loading("Enviando imagem...");
+    const startState = EditorState.create({
+      doc: editContent,
+      extensions: [
+        history(),
+        keymap.of([
+          { key: "Mod-b", run: () => { insertBold(); return true; } },
+          { key: "Mod-i", run: () => { insertItalic(); return true; } },
+          { key: "Mod-k", run: () => { insertLink(); return true; } },
+          { key: "Mod-1", run: () => { insertH1(); return true; } },
+          { key: "Mod-2", run: () => { insertH2(); return true; } },
+          { key: "Mod-3", run: () => { insertH3(); return true; } },
+          { key: "Mod-l", run: () => { insertList(); return true; } },
+          { key: "Mod-Shift-l", run: () => { insertOrderedList(); return true; } },
+          ...defaultKeymap,
+          ...historyKeymap,
+        ]),
+        markdown({
+          base: commonmarkLanguage,
+          codeLanguages: languages,
+          addKeymap: true // Ativa atalhos de markdown como listas automáticas
+        }),
+        createSyntaxHighlighting(customHighlightStyle),
+        resolvedTheme === "dark" ? oneDark : [],
+        highlightActiveLine(),
+        scrollPastEnd(),
+        EditorView.lineWrapping,
+        EditorView.theme({
+          "&": {
+            height: "100%",
+            fontSize: "16px",
+            backgroundColor: "transparent !important",
+          },
+          "&.cm-focused": {
+            outline: "none",
+          },
+          ".cm-content": {
+            padding: "20px",
+            fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+          },
+          ".cm-scroller": {
+            lineHeight: "1.6",
+            backgroundColor: "transparent !important",
+          },
+          ".cm-gutters": {
+            backgroundColor: "transparent !important",
+            border: "none",
+            color: resolvedTheme === "dark" ? "#4b5263" : "#9ca3af",
+          },
+          ".cm-activeLine": {
+            backgroundColor: resolvedTheme === "dark" ? "rgba(255, 255, 255, 0.05) !important" : "rgba(0, 0, 0, 0.03) !important",
+          },
+          ".cm-activeLineGutter": {
+            backgroundColor: "transparent !important",
+            color: resolvedTheme === "dark" ? "#e06c75" : "#cf222e",
+          },
+          ".cm-selectionBackground, .cm-content ::selection": {
+            backgroundColor: resolvedTheme === "dark" ? "rgba(255, 255, 255, 0.2) !important" : "rgba(0, 0, 0, 0.1) !important",
+          }
+        }, { dark: resolvedTheme === "dark" }),
+        EditorView.updateListener.of((update) => {
+          if (update.docChanged) {
+            handleContentChange(update.state.doc.toString());
+          }
+        }),
+        // Handler de eventos do DOM
+        EditorView.domEventHandlers({
+          scroll: () => {
+            // Usamos a Ref para evitar stale closure
+            if (previewModeRef.current === "split") {
+              handleScroll("editor");
+            }
+          },
+          paste: (event) => {
+            handlePaste(event);
+          }
+        })
+      ],
+    });
 
-      try {
-        const mediaResponse = await uploadMedia(imageFile);
-        insertTextAtCursor(mediaResponse.markdown, "");
-        toast.success("Imagem enviada com sucesso", { id: uploadToastId });
-      } catch {
-        toast.error("Erro ao enviar imagem. Tente novamente.", {
-          id: uploadToastId,
-        });
-      } finally {
-        setIsUploadingImage(false);
-      }
-    },
-    [getImageFileFromClipboard, insertTextAtCursor, isUploadingImage]
-  );
+    const view = new EditorView({
+      state: startState,
+      parent: editorRef.current,
+    });
 
-  const handleContentClick = useCallback((e: React.MouseEvent) => {
+    viewRef.current = view;
+
+    return () => {
+      view.destroy();
+    };
+  }, [resolvedTheme]); // Re-inicializa apenas quando o tema muda para aplicar as cores corretamente
+
+  // Sincronizar conteúdo de fora para dentro (ex: quando carrega uma nota)
+  useEffect(() => {
+    if (viewRef.current && editContent !== viewRef.current.state.doc.toString()) {
+      viewRef.current.dispatch({
+        changes: { from: 0, to: viewRef.current.state.doc.length, insert: editContent }
+      });
+    }
+  }, [editContent]);
+
+
+
+  const handleContentClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
     const imgContainer = target.closest('.markdown-img-container') as HTMLElement;
     
@@ -270,232 +432,16 @@ export function NoteEditor() {
         window.openImageModal(src, alt || '');
       }
     }
-  }, []);
+  };
 
-  // Função inteligente para handling de Enter
-  const handleKeyPress = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === "Enter" && textareaRef.current) {
-        const textarea = textareaRef.current;
-        const start = textarea.selectionStart;
-        const lines = editContent.substring(0, start).split("\n");
-        const currentLine = lines[lines.length - 1];
-
-        // Salvar posição do scroll
-        const scrollTop = textarea.scrollTop;
-        const scrollLeft = textarea.scrollLeft;
-
-        // Lista não ordenada (- item)
-        const unorderedListMatch = currentLine.match(/^(\s*)-\s(.*)$/);
-        if (unorderedListMatch) {
-          e.preventDefault();
-          const indent = unorderedListMatch[1];
-          const content = unorderedListMatch[2];
-
-          if (content.trim() === "") {
-            // Se a linha está vazia, remove o marcador
-            const newContent =
-              editContent.substring(0, start - currentLine.length) +
-              indent +
-              editContent.substring(start);
-            handleContentChange(newContent);
-            setTimeout(() => {
-              textarea.scrollTop = scrollTop;
-              textarea.scrollLeft = scrollLeft;
-              textarea.setSelectionRange(
-                start - currentLine.length + indent.length,
-                start - currentLine.length + indent.length
-              );
-            }, 0);
-          } else {
-            // Adiciona nova linha com marcador
-            const newContent =
-              editContent.substring(0, start) +
-              "\n" +
-              indent +
-              "- " +
-              editContent.substring(start);
-            handleContentChange(newContent);
-            setTimeout(() => {
-              const newPos = start + indent.length + 3;
-              textarea.scrollTop = scrollTop;
-              textarea.scrollLeft = scrollLeft;
-              textarea.setSelectionRange(newPos, newPos);
-            }, 0);
-          }
-          return;
-        }
-
-        // Lista ordenada (1. item)
-        const orderedListMatch = currentLine.match(/^(\s*)(\d+)\.\s(.*)$/);
-        if (orderedListMatch) {
-          e.preventDefault();
-          const indent = orderedListMatch[1];
-          const number = parseInt(orderedListMatch[2]);
-          const content = orderedListMatch[3];
-
-          if (content.trim() === "") {
-            // Se a linha está vazia, remove o marcador
-            const newContent =
-              editContent.substring(0, start - currentLine.length) +
-              indent +
-              editContent.substring(start);
-            handleContentChange(newContent);
-            setTimeout(() => {
-              textarea.scrollTop = scrollTop;
-              textarea.scrollLeft = scrollLeft;
-              textarea.setSelectionRange(
-                start - currentLine.length + indent.length,
-                start - currentLine.length + indent.length
-              );
-            }, 0);
-          } else {
-            // Adiciona nova linha com próximo número
-            const nextNumber = number + 1;
-            const newContent =
-              editContent.substring(0, start) +
-              "\n" +
-              indent +
-              nextNumber +
-              ". " +
-              editContent.substring(start);
-            handleContentChange(newContent);
-            setTimeout(() => {
-              const newPos =
-                start + indent.length + nextNumber.toString().length + 3;
-              textarea.scrollTop = scrollTop;
-              textarea.scrollLeft = scrollLeft;
-              textarea.setSelectionRange(newPos, newPos);
-            }, 0);
-          }
-          return;
-        }
-
-        // Citação (> texto)
-        const quoteMatch = currentLine.match(/^(\s*)>\s(.*)$/);
-        if (quoteMatch) {
-          e.preventDefault();
-          const indent = quoteMatch[1];
-          const content = quoteMatch[2];
-
-          if (content.trim() === "") {
-            // Se a linha está vazia, remove o marcador
-            const newContent =
-              editContent.substring(0, start - currentLine.length) +
-              indent +
-              editContent.substring(start);
-            handleContentChange(newContent);
-            setTimeout(() => {
-              textarea.scrollTop = scrollTop;
-              textarea.scrollLeft = scrollLeft;
-              textarea.setSelectionRange(
-                start - currentLine.length + indent.length,
-                start - currentLine.length + indent.length
-              );
-            }, 0);
-          } else {
-            // Adiciona nova linha de citação
-            const newContent =
-              editContent.substring(0, start) +
-              "\n" +
-              indent +
-              "> " +
-              editContent.substring(start);
-            handleContentChange(newContent);
-            setTimeout(() => {
-              const newPos = start + indent.length + 3;
-              textarea.scrollTop = scrollTop;
-              textarea.scrollLeft = scrollLeft;
-              textarea.setSelectionRange(newPos, newPos);
-            }, 0);
-          }
-          return;
-        }
-
-        // Task lists (- [ ] item ou - [x] item)
-        const taskMatch = currentLine.match(/^(\s*)-\s\[([ x])\]\s(.*)$/);
-        if (taskMatch) {
-          e.preventDefault();
-          const indent = taskMatch[1];
-          const content = taskMatch[3];
-
-          if (content.trim() === "") {
-            // Se a linha está vazia, remove o marcador
-            const newContent =
-              editContent.substring(0, start - currentLine.length) +
-              indent +
-              editContent.substring(start);
-            handleContentChange(newContent);
-            setTimeout(() => {
-              textarea.scrollTop = scrollTop;
-              textarea.scrollLeft = scrollLeft;
-              textarea.setSelectionRange(
-                start - currentLine.length + indent.length,
-                start - currentLine.length + indent.length
-              );
-            }, 0);
-          } else {
-            // Adiciona nova task não marcada
-            const newContent =
-              editContent.substring(0, start) +
-              "\n" +
-              indent +
-              "- [ ] " +
-              editContent.substring(start);
-            handleContentChange(newContent);
-            setTimeout(() => {
-              const newPos = start + indent.length + 6;
-              textarea.scrollTop = scrollTop;
-              textarea.scrollLeft = scrollLeft;
-              textarea.setSelectionRange(newPos, newPos);
-            }, 0);
-          }
-          return;
-        }
-      }
-    },
-    [editContent, handleContentChange]
-  );
-  
-  // Função para sincronizar o scroll no modo split (Bidirecional)
-  const handleScroll = useCallback((source: "editor" | "preview") => {
-    if (previewMode !== "split" || !textareaRef.current || !previewRef.current) return;
-
-    // Se o scroll foi disparado programaticamente por uma sincronização, ignora para evitar loop infinito
-    if (scrollSourceRef.current && scrollSourceRef.current !== source) {
-      scrollSourceRef.current = null;
-      return;
-    }
-
-    scrollSourceRef.current = source;
-    const textarea = textareaRef.current;
-    const preview = previewRef.current;
-
-    if (source === "editor") {
-      const scrollPercentage = textarea.scrollTop / (textarea.scrollHeight - textarea.clientHeight);
-      preview.scrollTop = scrollPercentage * (preview.scrollHeight - preview.clientHeight);
-    } else {
-      const scrollPercentage = preview.scrollTop / (preview.scrollHeight - preview.clientHeight);
-      textarea.scrollTop = scrollPercentage * (textarea.scrollHeight - textarea.clientHeight);
-    }
-
-    // Limpa a fonte do scroll após um pequeno delay para permitir novos scrolls manuais
-    // Usamos um timeout curto para garantir que o evento de scroll disparado programaticamente seja ignorado
-    setTimeout(() => {
-      if (scrollSourceRef.current === source) {
-        scrollSourceRef.current = null;
-      }
-    }, 50);
-  }, [previewMode]);
-
-  // Auto-focus no textarea quando entra em modo de edição
+  // Auto-focus no editor quando entra em modo de edição
   useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.focus();
+    if (viewRef.current) {
+      viewRef.current.focus();
     }
   }, []);
 
-  // Atalhos de teclado
+  // Atalhos de teclado (P e Fullscreen apenas, o resto o CM resolve)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ctrl/Cmd + P para alternar preview
@@ -516,51 +462,16 @@ export function NoteEditor() {
         e.preventDefault();
         setIsFullscreen(!isFullscreen);
       }
-
-      // Atalhos de formatação
-      if ((e.ctrlKey || e.metaKey) && e.key === "b") {
-        e.preventDefault();
-        insertBold();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === "i") {
-        e.preventDefault();
-        insertItalic();
-      }
-      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
-        e.preventDefault();
-        insertLink();
-      }
-
-      // Undo/Redo
-      if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key === "z") {
-        e.preventDefault();
-        undo();
-      }
-      if (
-        (e.ctrlKey || e.metaKey) &&
-        ((e.shiftKey && e.key === "Z") || e.key === "y")
-      ) {
-        e.preventDefault();
-        redo();
-      }
     };
 
     document.addEventListener("keydown", handleKeyDown);
-    document.addEventListener("paste", handlePaste);
 
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      document.removeEventListener("paste", handlePaste);
     };
   }, [
     previewMode,
-    isFullscreen,
-    insertBold,
-    insertItalic,
-    insertLink,
-    handlePaste,
-    undo,
-    redo,
+    isFullscreen
   ]);
 
   const renderSaveStatus = () => {
@@ -783,94 +694,53 @@ export function NoteEditor() {
 
         {/* Área do Editor */}
         <div
-          className={`border rounded-lg overflow-hidden ${
+          className={`border rounded-lg overflow-hidden flex ${
             isFullscreen
               ? "h-[calc(100vh-300px)]"
               : "h-[calc(100vh-320px)] min-h-[700px]"
           }`}
         >
-          {/* Modo apenas Editor */}
-          {previewMode === "edit" && (
-            <textarea
-              ref={textareaRef}
-              value={editContent}
-              onChange={(e) => handleContentChange(e.target.value)}
-              onKeyDown={handleKeyPress}
-              placeholder="Escreva seus pensamentos aqui usando Markdown..."
-              className="w-full h-full p-6 bg-background text-foreground resize-none focus:outline-none border-0"
-              style={{
-                fontFamily:
-                  'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-                fontSize: "16px",
-                lineHeight: "1.6",
-              }}
-            />
-          )}
+          {/* Editor (Sempre montado para não perder estado/foco) */}
+          <div 
+            ref={editorRef} 
+            className={`flex-1 bg-background relative overflow-hidden ${
+              previewMode === "preview" ? "hidden" : "block"
+            }`}
+          />
 
-          {/* Modo apenas Preview */}
-          {previewMode === "preview" && (
-            <div className="w-full h-full p-6 bg-background overflow-y-auto">
-              <div
-                className="prose prose-sm md:prose prose-neutral dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{
-                  __html: editContent
-                    ? parseMarkdown(editContent)
-                    : "<p class='text-muted-foreground italic'>Preview aparecerá aqui quando você escrever algo...</p>",
-                }}
-                onClick={handleContentClick}
-              />
-            </div>
-          )}
-
-          {/* Modo Split */}
+          {/* Divisor vertical no modo Split */}
           {previewMode === "split" && (
-            <div className="flex h-full">
-              {/* Editor lado esquerdo */}
-              <div className="flex-1 relative">
-                <textarea
-                  ref={textareaRef}
-                  value={editContent}
-                  onChange={(e) => handleContentChange(e.target.value)}
-                  onKeyDown={handleKeyPress}
-                  onScroll={() => handleScroll("editor")}
-                  placeholder="Escreva seus pensamentos aqui usando Markdown..."
-                  className="w-full h-full p-4 bg-background text-foreground resize-none focus:outline-none border-0 absolute inset-0"
-                  style={{
-                    fontFamily:
-                      'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-                    fontSize: "15px",
-                    lineHeight: "1.6",
-                  }}
-                />
-              </div>
-
-              {/* Divisor vertical */}
-              <div className="w-px bg-border flex-shrink-0"></div>
-
-              {/* Preview lado direito */}
-              <div className="flex-1 relative">
-                <div 
-                  ref={previewRef}
-                  onScroll={() => handleScroll("preview")}
-                  className="w-full h-full p-4 bg-background overflow-y-auto absolute inset-0"
-                >
-                  <div
-                    className="prose prose-sm prose-neutral dark:prose-invert max-w-none"
-                    dangerouslySetInnerHTML={{
-                      __html: editContent
-                        ? parseMarkdown(editContent)
-                        : "<p class='text-muted-foreground italic'>Preview aparecerá aqui...</p>",
-                    }}
-                    onClick={handleContentClick}
-                  />
-                </div>
-              </div>
-            </div>
+            <div className="w-px bg-border flex-shrink-0" />
           )}
+
+          {/* Preview */}
+          <div 
+            ref={previewRef}
+            onScroll={() => handleScroll("preview")}
+            className={`flex-1 bg-background overflow-y-auto relative ${
+              previewMode === "edit" ? "hidden" : "block"
+            }`}
+          >
+            <div
+              className={`p-6 prose prose-neutral dark:prose-invert max-w-none ${
+                previewMode === "split" ? "prose-sm" : "prose-base"
+              }`}
+              dangerouslySetInnerHTML={{
+                __html: editContent
+                  ? parseMarkdown(editContent)
+                  : `<p class='text-muted-foreground italic'>${
+                      previewMode === "split" 
+                        ? "Preview aparecerá aqui..." 
+                        : "Preview aparecerá aqui quando você escrever algo..."
+                    }</p>`,
+              }}
+              onClick={handleContentClick}
+            />
+          </div>
         </div>
 
         {/* Dicas de atalhos */}
-        <div className="mt-4 p-3 bg-muted/30 rounded-lg">
+        {/* <div className="mt-4 p-3 bg-muted/30 rounded-lg">
           <p className="text-xs text-muted-foreground">
             💡 <strong>Atalhos:</strong>
             <span className="mx-2">Ctrl+Z desfazer</span>
@@ -882,7 +752,7 @@ export function NoteEditor() {
               Enter em listas = continua automaticamente
             </span>
           </p>
-        </div>
+        </div> */}
       </div>
     </div>
   );
