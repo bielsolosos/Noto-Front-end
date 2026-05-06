@@ -56,6 +56,8 @@ export function NoteEditor() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const scrollSourceRef = useRef<"editor" | "preview" | null>(null);
   const editContentRef = useRef(editContent);
 
   useEffect(() => {
@@ -454,6 +456,37 @@ export function NoteEditor() {
     },
     [editContent, handleContentChange]
   );
+  
+  // Função para sincronizar o scroll no modo split (Bidirecional)
+  const handleScroll = useCallback((source: "editor" | "preview") => {
+    if (previewMode !== "split" || !textareaRef.current || !previewRef.current) return;
+
+    // Se o scroll foi disparado programaticamente por uma sincronização, ignora para evitar loop infinito
+    if (scrollSourceRef.current && scrollSourceRef.current !== source) {
+      scrollSourceRef.current = null;
+      return;
+    }
+
+    scrollSourceRef.current = source;
+    const textarea = textareaRef.current;
+    const preview = previewRef.current;
+
+    if (source === "editor") {
+      const scrollPercentage = textarea.scrollTop / (textarea.scrollHeight - textarea.clientHeight);
+      preview.scrollTop = scrollPercentage * (preview.scrollHeight - preview.clientHeight);
+    } else {
+      const scrollPercentage = preview.scrollTop / (preview.scrollHeight - preview.clientHeight);
+      textarea.scrollTop = scrollPercentage * (textarea.scrollHeight - textarea.clientHeight);
+    }
+
+    // Limpa a fonte do scroll após um pequeno delay para permitir novos scrolls manuais
+    // Usamos um timeout curto para garantir que o evento de scroll disparado programaticamente seja ignorado
+    setTimeout(() => {
+      if (scrollSourceRef.current === source) {
+        scrollSourceRef.current = null;
+      }
+    }, 50);
+  }, [previewMode]);
 
   // Auto-focus no textarea quando entra em modo de edição
   useEffect(() => {
@@ -799,6 +832,7 @@ export function NoteEditor() {
                   value={editContent}
                   onChange={(e) => handleContentChange(e.target.value)}
                   onKeyDown={handleKeyPress}
+                  onScroll={() => handleScroll("editor")}
                   placeholder="Escreva seus pensamentos aqui usando Markdown..."
                   className="w-full h-full p-4 bg-background text-foreground resize-none focus:outline-none border-0 absolute inset-0"
                   style={{
@@ -815,7 +849,11 @@ export function NoteEditor() {
 
               {/* Preview lado direito */}
               <div className="flex-1 relative">
-                <div className="w-full h-full p-4 bg-background overflow-y-auto absolute inset-0">
+                <div 
+                  ref={previewRef}
+                  onScroll={() => handleScroll("preview")}
+                  className="w-full h-full p-4 bg-background overflow-y-auto absolute inset-0"
+                >
                   <div
                     className="prose prose-sm prose-neutral dark:prose-invert max-w-none"
                     dangerouslySetInnerHTML={{
