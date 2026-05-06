@@ -86,15 +86,25 @@ import { tags as t } from "@lezer/highlight";
 // reclame de mutação direta de DOM em refs.
 const performScrollSync = (
   source: "editor" | "preview",
-  editorScrollDOM: HTMLElement,
+  editorView: EditorView,
   previewDOM: HTMLElement
 ) => {
+  const editorScrollDOM = editorView.scrollDOM;
+  const editorHeight = editorView.contentHeight;
+  const editorVisibleHeight = editorScrollDOM.clientHeight;
+  const previewHeight = previewDOM.scrollHeight;
+  const previewVisibleHeight = previewDOM.clientHeight;
+
+  // Evita divisão por zero
+  const editorScrollable = editorHeight - editorVisibleHeight;
+  const previewScrollable = previewHeight - previewVisibleHeight;
+
   if (source === "editor") {
-    const scrollPercentage = editorScrollDOM.scrollTop / (editorScrollDOM.scrollHeight - editorScrollDOM.clientHeight);
-    previewDOM.scrollTop = scrollPercentage * (previewDOM.scrollHeight - previewDOM.clientHeight);
+    const scrollPercentage = editorScrollDOM.scrollTop / (editorScrollable || 1);
+    previewDOM.scrollTop = scrollPercentage * previewScrollable;
   } else {
-    const scrollPercentage = previewDOM.scrollTop / (previewDOM.scrollHeight - previewDOM.clientHeight);
-    editorScrollDOM.scrollTop = scrollPercentage * (editorScrollDOM.scrollHeight - editorScrollDOM.clientHeight);
+    const scrollPercentage = previewDOM.scrollTop / (previewScrollable || 1);
+    editorScrollDOM.scrollTop = scrollPercentage * editorScrollable;
   }
 };
 
@@ -290,11 +300,8 @@ export function NoteEditor() {
 
     scrollSourceRef.current = source;
     
-    // Obter o elemento de scroll do CodeMirror
-    const editorScrollDOM = viewRef.current.scrollDOM;
-    
-    // Executar a sincronia via função externa para não irritar o React Compiler
-    performScrollSync(source, editorScrollDOM, previewRef.current);
+    // Executar a sincronia via função externa com dados de precisão do CodeMirror
+    performScrollSync(source, viewRef.current, previewRef.current);
 
     setTimeout(() => {
       if (scrollSourceRef.current === source) {
@@ -308,14 +315,22 @@ export function NoteEditor() {
   useEffect(() => {
     if (!editorRef.current) return;
 
-    // Estilo customizado para links e tarefas (mais legível no dark mode)
+    // Estilo customizado para links, tarefas e cabeçalhos (legível em ambos os modos)
     const customHighlightStyle = HighlightStyle.define([
       { tag: t.link, color: resolvedTheme === "dark" ? "#61afef" : "#0969da", textDecoration: "underline" },
       { tag: t.url, color: resolvedTheme === "dark" ? "#abb2bf" : "#57606a", opacity: 0.7 },
       { tag: t.heading1, fontWeight: "bold", fontSize: "1.4em", color: resolvedTheme === "dark" ? "#e06c75" : "#cf222e" },
       { tag: t.heading2, fontWeight: "bold", fontSize: "1.2em", color: resolvedTheme === "dark" ? "#d19a66" : "#953800" },
       { tag: t.strikethrough, textDecoration: "line-through" },
-      { tag: t.meta, color: resolvedTheme === "dark" ? "#c678dd" : "#8250df" }, // Tasks [-] [x]
+      { tag: t.meta, color: resolvedTheme === "dark" ? "#c678dd" : "#8250df" },
+      // Adicionando tags de código para garantir syntax highlighting no editor
+      { tag: t.keyword, color: resolvedTheme === "dark" ? "#c678dd" : "#d73a49" },
+      { tag: t.operator, color: resolvedTheme === "dark" ? "#56b6c2" : "#005cc5" },
+      { tag: t.string, color: resolvedTheme === "dark" ? "#98c379" : "#032f62" },
+      { tag: t.number, color: resolvedTheme === "dark" ? "#d19a66" : "#005cc5" },
+      { tag: t.variableName, color: resolvedTheme === "dark" ? "#e06c75" : "#24292e" },
+      { tag: t.comment, color: resolvedTheme === "dark" ? "#5c6370" : "#6a737d", fontStyle: "italic" },
+      { tag: t.function(t.variableName), color: resolvedTheme === "dark" ? "#61afef" : "#6f42c1" },
     ]);
 
     const startState = EditorState.create({
@@ -440,6 +455,33 @@ export function NoteEditor() {
       viewRef.current.focus();
     }
   }, []);
+
+  // Monitorar carregamento de imagens no preview para re-sincronizar o scroll
+  useEffect(() => {
+    if (previewMode !== "split" || !previewRef.current) return;
+
+    const preview = previewRef.current;
+    
+    // Observer para detectar quando o conteúdo do preview muda (ex: imagens carregadas)
+    const observer = new MutationObserver(() => {
+      // Pequeno delay para esperar o layout do navegador estabilizar
+      setTimeout(() => {
+        if (previewModeRef.current === "split" && viewRef.current) {
+          // Re-sincroniza do editor para o preview para manter a coerência
+          performScrollSync("editor", viewRef.current, preview);
+        }
+      }, 100);
+    });
+
+    observer.observe(preview, { 
+      childList: true, 
+      subtree: true, 
+      attributes: true, 
+      attributeFilter: ['src'] 
+    });
+
+    return () => observer.disconnect();
+  }, [previewMode, editContent]); // Re-ativa quando o conteúdo ou modo muda
 
   // Atalhos de teclado (P e Fullscreen apenas, o resto o CM resolve)
   useEffect(() => {
