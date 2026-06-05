@@ -1,0 +1,69 @@
+<div class="relative min-h-screen w-full overflow-hidden">
+  <!-- Background estático -->
+  <div class="absolute inset-0 z-0">
+    <div class="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-card/30"></div>
+    <div class="absolute top-0 left-0 w-full h-full">
+      <div class="absolute top-[20%] left-[10%] w-8 h-8 opacity-[0.08] bg-primary rounded-full blur-lg"></div>
+      <div class="absolute top-[70%] right-[15%] w-12 h-12 opacity-[0.06] bg-primary rounded-full blur-xl"></div>
+      <div class="absolute top-[40%] left-[80%] w-6 h-6 opacity-[0.10] bg-primary rounded-full blur-md"></div>
+      <div class="absolute top-[85%] left-[25%] w-10 h-10 opacity-[0.07] bg-primary rounded-full blur-lg"></div>
+    </div>
+  </div>
+
+  <!-- Login container -->
+  <div class="relative z-10 min-h-screen flex items-center justify-center px-4">
+    <div
+      class="w-full max-w-md rounded-2xl p-8 backdrop-blur-md border border-border/40 shadow-2xl bg-card/80 text-card-foreground"
+    >
+      <div class="flex flex-col items-center mb-8">
+        <a routerLink="/" class="w-16 h-16 mb-4 rounded-2xl bg-gradient-to-br from-secondary to-primary/20 flex items-center justify-center cursor-pointer">
+          <i class="pi pi-book text-2xl text-primary font-bold"></i>
+        </a>
+        <h2 class="text-xl font-bold tracking-tight">Entrar no NOTO</h2>
+        <p class="text-sm text-muted-foreground mt-2">
+          Faça login para continuar
+        </p>
+      </div>
+
+      <!-- Erros de Autenticação -->
+      @if (errorMessage()) {
+        <div class="mb-6 p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-500 text-sm font-medium">
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <app-login-form
+        [isLoading]="isLoading()"
+        (submitForm)="onLoginSubmit($event)"
+      ></app-login-form>
+
+      <!-- Seção de ajuda -->
+      <div class="mt-6 pt-6 border-t border-border/40">
+        <div class="text-center">
+          <p class="text-sm text-muted-foreground mb-3">
+            Precisa criar uma conta ou tem dúvidas?
+          </p>
+          <a
+            href="https://discord.com/users/bielsolosos"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 text-sm text-primary font-semibold hover:text-primary/80 transition-colors duration-200"
+          >
+            <i class="pi pi-discord text-lg"></i>
+            <span>Contate bielsolosos no Discord</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botão de alternância de tema no canto inferior direito -->
+  <button
+    (click)="themeService.toggleDarkMode()"
+    class="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-card shadow-lg border border-border/50 hover:bg-primary/10 transition-colors duration-200 cursor-pointer"
+    aria-label="Alternar tema"
+    type="button"
+  >
+    <i [class]="themeService.darkMode() ? 'pi pi-sun text-xl text-primary' : 'pi pi-moon text-xl text-primary'"></i>
+  </button>
+</div>

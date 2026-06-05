@@ -1,0 +1,156 @@
+<div class="relative min-h-screen bg-background text-foreground transition-colors duration-300">
+  
+  <!-- Botão de Alternância do Menu Lateral -->
+  <button
+    type="button"
+    (click)="sidebarService.toggleSidebar()"
+    class="fixed top-4 z-[45] h-10 w-10 rounded-full border border-border bg-card shadow-md flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out hover:bg-primary/10 focus:outline-none"
+    [ngClass]="{
+      'left-[20.75rem]': sidebarService.isSidebarOpen(),
+      'left-4': !sidebarService.isSidebarOpen()
+    }"
+    [attr.aria-label]="sidebarService.isSidebarOpen() ? 'Fechar menu lateral' : 'Abrir menu lateral'"
+  >
+    <i [class]="sidebarService.isSidebarOpen() ? 'pi pi-times text-sm' : 'pi pi-bars text-sm'"></i>
+  </button>
+
+  <div class="flex min-h-screen">
+    <!-- Sidebar (Dumb Component) -->
+    <app-sidebar
+      [isOpen]="sidebarService.isSidebarOpen()"
+      [pageSummaries]="notesService.filteredPageSummaries()"
+      [selectedPageId]="notesService.selectedPageId()"
+      [searchQuery]="notesService.searchQuery()"
+      [currentUser]="authService.currentUser()"
+      [isDarkMode]="themeService.darkMode()"
+      [isLoadingList]="notesService.isLoadingList()"
+      [isCreating]="notesService.isCreating()"
+      [isAdmin]="authService.isAdmin()"
+      (selectPage)="handleSelectPage($event)"
+      (deletePage)="handleDeletePage($event)"
+      (createPage)="handleCreatePage()"
+      (searchChange)="handleSearchChange($event)"
+      (toggleTheme)="themeService.toggleDarkMode()"
+      (logout)="handleLogout()"
+    ></app-sidebar>
+
+    <!-- Área Principal de Conteúdo -->
+    <div
+      class="flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out"
+      [ngClass]="{
+        'ml-80': sidebarService.isSidebarOpen(),
+        'ml-0': !sidebarService.isSidebarOpen()
+      }"
+    >
+      @if (notesService.isLoadingPage() && !notesService.selectedPage()) {
+        <div class="flex-1 flex items-center justify-center">
+          <i class="pi pi-spin pi-spinner text-3xl text-primary"></i>
+        </div>
+      } @else if (!notesService.selectedPage()) {
+        <!-- Tela de Boas-vindas quando nenhuma página está selecionada -->
+        <main class="flex-1 flex items-center justify-center p-4">
+          <div class="text-center space-y-6 max-w-md">
+            <i class="pi pi-book text-6xl md:text-8xl text-primary/30 mx-auto block"></i>
+            <div class="space-y-2">
+              <h2 class="text-xl md:text-2xl font-bold tracking-tight">
+                {{ notesService.pageSummaries().length > 0 ? 'Bem-vindo ao seu Noto' : 'Nenhuma entrada ainda' }}
+              </h2>
+              <p class="text-muted-foreground text-sm md:text-base font-light">
+                {{ notesService.pageSummaries().length > 0 
+                  ? 'Abra o menu lateral pelo botão fixo para alternar entradas ou criar uma nova.'
+                  : 'Crie sua primeira entrada no botão de Novo para começar a escrever.'
+                }}
+              </p>
+            </div>
+          </div>
+        </main>
+      } @else {
+        <!-- Nota Selecionada -->
+        <main class="flex-1 flex flex-col relative min-h-screen">
+          
+          <!-- Botões de Ação do Editor no Canto Superior Direito -->
+          <div class="absolute right-4 top-4 z-[45] flex items-center gap-3">
+            @if (notesService.isEditing()) {
+              <button
+                (click)="notesService.savePage()"
+                [disabled]="notesService.isSaving() || !notesService.hasUnsavedChanges()"
+                class="h-10 rounded-full px-4 bg-primary text-primary-foreground hover:bg-primary/95 text-sm font-semibold shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              >
+                <i class="pi pi-save"></i>
+                <span>Salvar</span>
+              </button>
+              <button
+                (click)="notesService.cancelEdit()"
+                class="h-10 rounded-full px-4 border border-border bg-card hover:bg-primary/10 text-sm font-semibold shadow-md flex items-center gap-2 cursor-pointer"
+              >
+                <i class="pi pi-times"></i>
+                <span>Cancelar</span>
+              </button>
+            } @else {
+              <!-- Menu Dropdown para Exportação e Botão Editar colados -->
+              <div class="relative">
+                <button
+                  (click)="toggleExportDropdown()"
+                  class="h-10 px-4 rounded-full border border-border bg-card hover:bg-primary/10 text-sm font-semibold shadow-md flex items-center gap-2 cursor-pointer transition-colors"
+                >
+                  <i class="pi pi-download"></i>
+                  <span>Exportar</span>
+                  <i class="pi pi-chevron-down text-xs"></i>
+                </button>
+
+                @if (isExportDropdownOpen()) {
+                  <div
+                    class="absolute right-0 mt-2 z-[40] w-40 rounded-xl border border-border bg-card shadow-2xl p-1 flex flex-col animate-fade-in"
+                  >
+                    <button
+                      (click)="exportNote()"
+                      class="flex items-center gap-2 px-3 py-2 rounded-lg text-left text-xs font-semibold hover:bg-primary/10 text-foreground transition-colors cursor-pointer w-full"
+                    >
+                      <i class="pi pi-file"></i>
+                      <span>Exportar (.md)</span>
+                    </button>
+                  </div>
+                }
+              </div>
+
+              <button
+                (click)="notesService.startEditing()"
+                class="h-10 rounded-full px-5 bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-semibold shadow-md flex items-center gap-2 cursor-pointer"
+              >
+                <i class="pi pi-pencil"></i>
+                <span>Editar</span>
+              </button>
+            }
+          </div>
+
+          <!-- Componente do Editor ou Visualizador (Dumb Components) -->
+          <div class="flex-1 flex flex-col overflow-hidden">
+            @if (notesService.isEditing()) {
+              <app-note-editor
+                [content]="notesService.editContent()"
+                [title]="notesService.editTitle()"
+                [hasUnsavedChanges]="notesService.hasUnsavedChanges()"
+                [isDarkMode]="themeService.darkMode()"
+                [isSaving]="notesService.isSaving()"
+                (contentChange)="handleContentChange($event)"
+                (titleChange)="notesService.editTitle.set($event); notesService.hasUnsavedChanges.set(true)"
+                (savePage)="notesService.savePage()"
+                (autoSave)="handleAutoSave()"
+                (uploadImage)="handleUploadImage($event)"
+                class="flex-1 flex flex-col"
+              ></app-note-editor>
+            } @else {
+              <app-note-viewer
+                [title]="notesService.selectedPage()?.title || ''"
+                [content]="notesService.selectedPage()?.content || ''"
+                [createdAt]="notesService.selectedPage()?.createdAt || ''"
+                [updatedAt]="notesService.selectedPage()?.updatedAt || ''"
+                class="flex-1 flex flex-col animate-fade-in"
+              ></app-note-viewer>
+            }
+          </div>
+        </main>
+      }
+    </div>
+  </div>
+</div>

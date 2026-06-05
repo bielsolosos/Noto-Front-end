@@ -1,0 +1,1427 @@
+﻿{
+    "openapi":  "3.0.1",
+    "info":  {
+                 "title":  "Noto API",
+                 "description":  "API para gerenciamento de notas e conteÃºdos",
+                 "contact":  {
+                                 "name":  "Gabriel Coutinho",
+                                 "url":  "https://github.com/bielsolosos"
+                             },
+                 "license":  {
+                                 "name":  "MIT License",
+                                 "url":  "https://opensource.org/licenses/MIT"
+                             },
+                 "version":  "2.0.0"
+             },
+    "servers":  [
+                    {
+                        "url":  "http://localhost:8080",
+                        "description":  "Servidor de Desenvolvimento Local"
+                    }
+                ],
+    "security":  [
+                     {
+                         "Bearer Authentication":  [
+
+                                                   ]
+                     }
+                 ],
+    "paths":  {
+                  "/api/pages/{id}":  {
+                                          "get":  {
+                                                      "tags":  [
+                                                                   "page-controller"
+                                                               ],
+                                                      "operationId":  "getPage",
+                                                      "parameters":  [
+                                                                         {
+                                                                             "name":  "id",
+                                                                             "in":  "path",
+                                                                             "required":  true,
+                                                                             "schema":  {
+                                                                                            "type":  "string",
+                                                                                            "format":  "uuid"
+                                                                                        }
+                                                                         }
+                                                                     ],
+                                                      "responses":  {
+                                                                        "403":  {
+                                                                                    "description":  "Forbidden",
+                                                                                    "content":  {
+                                                                                                    "*/*":  {
+                                                                                                                "schema":  {
+                                                                                                                               "type":  "object",
+                                                                                                                               "additionalProperties":  {
+                                                                                                                                                            "type":  "string"
+                                                                                                                                                        }
+                                                                                                                           }
+                                                                                                            }
+                                                                                                }
+                                                                                },
+                                                                        "200":  {
+                                                                                    "description":  "OK",
+                                                                                    "content":  {
+                                                                                                    "*/*":  {
+                                                                                                                "schema":  {
+                                                                                                                               "$ref":  "#/components/schemas/PageResponse"
+                                                                                                                           }
+                                                                                                            }
+                                                                                                }
+                                                                                }
+                                                                    }
+                                                  },
+                                          "put":  {
+                                                      "tags":  [
+                                                                   "page-controller"
+                                                               ],
+                                                      "operationId":  "editPageContent",
+                                                      "parameters":  [
+                                                                         {
+                                                                             "name":  "id",
+                                                                             "in":  "path",
+                                                                             "required":  true,
+                                                                             "schema":  {
+                                                                                            "type":  "string",
+                                                                                            "format":  "uuid"
+                                                                                        }
+                                                                         }
+                                                                     ],
+                                                      "requestBody":  {
+                                                                          "content":  {
+                                                                                          "application/json":  {
+                                                                                                                   "schema":  {
+                                                                                                                                  "$ref":  "#/components/schemas/PageRequest"
+                                                                                                                              }
+                                                                                                               }
+                                                                                      },
+                                                                          "required":  true
+                                                                      },
+                                                      "responses":  {
+                                                                        "403":  {
+                                                                                    "description":  "Forbidden",
+                                                                                    "content":  {
+                                                                                                    "*/*":  {
+                                                                                                                "schema":  {
+                                                                                                                               "type":  "object",
+                                                                                                                               "additionalProperties":  {
+                                                                                                                                                            "type":  "string"
+                                                                                                                                                        }
+                                                                                                                           }
+                                                                                                            }
+                                                                                                }
+                                                                                },
+                                                                        "200":  {
+                                                                                    "description":  "OK",
+                                                                                    "content":  {
+                                                                                                    "*/*":  {
+                                                                                                                "schema":  {
+                                                                                                                               "$ref":  "#/components/schemas/PageResponse"
+                                                                                                                           }
+                                                                                                            }
+                                                                                                }
+                                                                                }
+                                                                    }
+                                                  },
+                                          "delete":  {
+                                                         "tags":  [
+                                                                      "page-controller"
+                                                                  ],
+                                                         "operationId":  "deletePage",
+                                                         "parameters":  [
+                                                                            {
+                                                                                "name":  "id",
+                                                                                "in":  "path",
+                                                                                "required":  true,
+                                                                                "schema":  {
+                                                                                               "type":  "string",
+                                                                                               "format":  "uuid"
+                                                                                           }
+                                                                            }
+                                                                        ],
+                                                         "responses":  {
+                                                                           "403":  {
+                                                                                       "description":  "Forbidden",
+                                                                                       "content":  {
+                                                                                                       "*/*":  {
+                                                                                                                   "schema":  {
+                                                                                                                                  "type":  "object",
+                                                                                                                                  "additionalProperties":  {
+                                                                                                                                                               "type":  "string"
+                                                                                                                                                           }
+                                                                                                                              }
+                                                                                                               }
+                                                                                                   }
+                                                                                   },
+                                                                           "200":  {
+                                                                                       "description":  "OK",
+                                                                                       "content":  {
+                                                                                                       "*/*":  {
+                                                                                                                   "schema":  {
+                                                                                                                                  "$ref":  "#/components/schemas/MessageResponse"
+                                                                                                                              }
+                                                                                                               }
+                                                                                                   }
+                                                                                   }
+                                                                       }
+                                                     }
+                                      },
+                  "/api/users/register":  {
+                                              "post":  {
+                                                           "tags":  [
+                                                                        "user-controller"
+                                                                    ],
+                                                           "operationId":  "createUser",
+                                                           "requestBody":  {
+                                                                               "content":  {
+                                                                                               "application/json":  {
+                                                                                                                        "schema":  {
+                                                                                                                                       "$ref":  "#/components/schemas/CreateUserRequest"
+                                                                                                                                   }
+                                                                                                                    }
+                                                                                           },
+                                                                               "required":  true
+                                                                           },
+                                                           "responses":  {
+                                                                             "403":  {
+                                                                                         "description":  "Forbidden",
+                                                                                         "content":  {
+                                                                                                         "*/*":  {
+                                                                                                                     "schema":  {
+                                                                                                                                    "type":  "object",
+                                                                                                                                    "additionalProperties":  {
+                                                                                                                                                                 "type":  "string"
+                                                                                                                                                             }
+                                                                                                                                }
+                                                                                                                 }
+                                                                                                     }
+                                                                                     },
+                                                                             "200":  {
+                                                                                         "description":  "OK",
+                                                                                         "content":  {
+                                                                                                         "*/*":  {
+                                                                                                                     "schema":  {
+                                                                                                                                    "$ref":  "#/components/schemas/UserResponse"
+                                                                                                                                }
+                                                                                                                 }
+                                                                                                     }
+                                                                                     }
+                                                                         }
+                                                       }
+                                          },
+                  "/api/users/profile-image":  {
+                                                   "post":  {
+                                                                "tags":  [
+                                                                             "user-controller"
+                                                                         ],
+                                                                "operationId":  "uploadProfileImage",
+                                                                "parameters":  [
+                                                                                   {
+                                                                                       "name":  "mediaRequest",
+                                                                                       "in":  "query",
+                                                                                       "required":  true,
+                                                                                       "schema":  {
+                                                                                                      "$ref":  "#/components/schemas/MediaRequest"
+                                                                                                  }
+                                                                                   }
+                                                                               ],
+                                                                "responses":  {
+                                                                                  "403":  {
+                                                                                              "description":  "Forbidden",
+                                                                                              "content":  {
+                                                                                                              "*/*":  {
+                                                                                                                          "schema":  {
+                                                                                                                                         "type":  "object",
+                                                                                                                                         "additionalProperties":  {
+                                                                                                                                                                      "type":  "string"
+                                                                                                                                                                  }
+                                                                                                                                     }
+                                                                                                                      }
+                                                                                                          }
+                                                                                          },
+                                                                                  "200":  {
+                                                                                              "description":  "OK",
+                                                                                              "content":  {
+                                                                                                              "*/*":  {
+                                                                                                                          "schema":  {
+                                                                                                                                         "$ref":  "#/components/schemas/UserResponse"
+                                                                                                                                     }
+                                                                                                                      }
+                                                                                                          }
+                                                                                          }
+                                                                              }
+                                                            }
+                                               },
+                  "/api/users/edit-credentials":  {
+                                                      "post":  {
+                                                                   "tags":  [
+                                                                                "user-controller"
+                                                                            ],
+                                                                   "operationId":  "editUser",
+                                                                   "requestBody":  {
+                                                                                       "content":  {
+                                                                                                       "application/json":  {
+                                                                                                                                "schema":  {
+                                                                                                                                               "$ref":  "#/components/schemas/EditUserRequest"
+                                                                                                                                           }
+                                                                                                                            }
+                                                                                                   },
+                                                                                       "required":  true
+                                                                                   },
+                                                                   "responses":  {
+                                                                                     "403":  {
+                                                                                                 "description":  "Forbidden",
+                                                                                                 "content":  {
+                                                                                                                 "*/*":  {
+                                                                                                                             "schema":  {
+                                                                                                                                            "type":  "object",
+                                                                                                                                            "additionalProperties":  {
+                                                                                                                                                                         "type":  "string"
+                                                                                                                                                                     }
+                                                                                                                                        }
+                                                                                                                         }
+                                                                                                             }
+                                                                                             },
+                                                                                     "200":  {
+                                                                                                 "description":  "OK",
+                                                                                                 "content":  {
+                                                                                                                 "*/*":  {
+                                                                                                                             "schema":  {
+                                                                                                                                            "$ref":  "#/components/schemas/UserResponse"
+                                                                                                                                        }
+                                                                                                                         }
+                                                                                                             }
+                                                                                             }
+                                                                                 }
+                                                               }
+                                                  },
+                  "/api/users/change-password":  {
+                                                     "post":  {
+                                                                  "tags":  [
+                                                                               "user-controller"
+                                                                           ],
+                                                                  "operationId":  "changePassword",
+                                                                  "requestBody":  {
+                                                                                      "content":  {
+                                                                                                      "application/json":  {
+                                                                                                                               "schema":  {
+                                                                                                                                              "$ref":  "#/components/schemas/ChangePasswordRequest"
+                                                                                                                                          }
+                                                                                                                           }
+                                                                                                  },
+                                                                                      "required":  true
+                                                                                  },
+                                                                  "responses":  {
+                                                                                    "403":  {
+                                                                                                "description":  "Forbidden",
+                                                                                                "content":  {
+                                                                                                                "*/*":  {
+                                                                                                                            "schema":  {
+                                                                                                                                           "type":  "object",
+                                                                                                                                           "additionalProperties":  {
+                                                                                                                                                                        "type":  "string"
+                                                                                                                                                                    }
+                                                                                                                                       }
+                                                                                                                        }
+                                                                                                            }
+                                                                                            },
+                                                                                    "200":  {
+                                                                                                "description":  "OK",
+                                                                                                "content":  {
+                                                                                                                "*/*":  {
+                                                                                                                            "schema":  {
+                                                                                                                                           "$ref":  "#/components/schemas/MessageResponse"
+                                                                                                                                       }
+                                                                                                                        }
+                                                                                                            }
+                                                                                            }
+                                                                                }
+                                                              }
+                                                 },
+                  "/api/pages":  {
+                                     "post":  {
+                                                  "tags":  [
+                                                               "page-controller"
+                                                           ],
+                                                  "operationId":  "createPage",
+                                                  "requestBody":  {
+                                                                      "content":  {
+                                                                                      "application/json":  {
+                                                                                                               "schema":  {
+                                                                                                                              "$ref":  "#/components/schemas/PageRequest"
+                                                                                                                          }
+                                                                                                           }
+                                                                                  },
+                                                                      "required":  true
+                                                                  },
+                                                  "responses":  {
+                                                                    "403":  {
+                                                                                "description":  "Forbidden",
+                                                                                "content":  {
+                                                                                                "*/*":  {
+                                                                                                            "schema":  {
+                                                                                                                           "type":  "object",
+                                                                                                                           "additionalProperties":  {
+                                                                                                                                                        "type":  "string"
+                                                                                                                                                    }
+                                                                                                                       }
+                                                                                                        }
+                                                                                            }
+                                                                            },
+                                                                    "200":  {
+                                                                                "description":  "OK",
+                                                                                "content":  {
+                                                                                                "*/*":  {
+                                                                                                            "schema":  {
+                                                                                                                           "$ref":  "#/components/schemas/PageResponse"
+                                                                                                                       }
+                                                                                                        }
+                                                                                            }
+                                                                            }
+                                                                }
+                                              }
+                                 },
+                  "/api/media/upload":  {
+                                            "post":  {
+                                                         "tags":  [
+                                                                      "media-controller"
+                                                                  ],
+                                                         "operationId":  "addMedia",
+                                                         "parameters":  [
+                                                                            {
+                                                                                "name":  "media",
+                                                                                "in":  "query",
+                                                                                "required":  true,
+                                                                                "schema":  {
+                                                                                               "$ref":  "#/components/schemas/MediaRequest"
+                                                                                           }
+                                                                            }
+                                                                        ],
+                                                         "responses":  {
+                                                                           "403":  {
+                                                                                       "description":  "Forbidden",
+                                                                                       "content":  {
+                                                                                                       "*/*":  {
+                                                                                                                   "schema":  {
+                                                                                                                                  "type":  "object",
+                                                                                                                                  "additionalProperties":  {
+                                                                                                                                                               "type":  "string"
+                                                                                                                                                           }
+                                                                                                                              }
+                                                                                                               }
+                                                                                                   }
+                                                                                   },
+                                                                           "200":  {
+                                                                                       "description":  "OK",
+                                                                                       "content":  {
+                                                                                                       "*/*":  {
+                                                                                                                   "schema":  {
+                                                                                                                                  "$ref":  "#/components/schemas/MediaResponse"
+                                                                                                                              }
+                                                                                                               }
+                                                                                                   }
+                                                                                   }
+                                                                       }
+                                                     }
+                                        },
+                  "/api/auth/refresh":  {
+                                            "post":  {
+                                                         "tags":  [
+                                                                      "auth-rest-controller"
+                                                                  ],
+                                                         "operationId":  "refresh",
+                                                         "requestBody":  {
+                                                                             "content":  {
+                                                                                             "application/json":  {
+                                                                                                                      "schema":  {
+                                                                                                                                     "$ref":  "#/components/schemas/RefreshRequest"
+                                                                                                                                 }
+                                                                                                                  }
+                                                                                         },
+                                                                             "required":  true
+                                                                         },
+                                                         "responses":  {
+                                                                           "403":  {
+                                                                                       "description":  "Forbidden",
+                                                                                       "content":  {
+                                                                                                       "*/*":  {
+                                                                                                                   "schema":  {
+                                                                                                                                  "type":  "object",
+                                                                                                                                  "additionalProperties":  {
+                                                                                                                                                               "type":  "string"
+                                                                                                                                                           }
+                                                                                                                              }
+                                                                                                               }
+                                                                                                   }
+                                                                                   },
+                                                                           "200":  {
+                                                                                       "description":  "OK",
+                                                                                       "content":  {
+                                                                                                       "*/*":  {
+                                                                                                                   "schema":  {
+                                                                                                                                  "$ref":  "#/components/schemas/TokenResponse"
+                                                                                                                              }
+                                                                                                               }
+                                                                                                   }
+                                                                                   }
+                                                                       }
+                                                     }
+                                        },
+                  "/api/auth/login":  {
+                                          "post":  {
+                                                       "tags":  [
+                                                                    "auth-rest-controller"
+                                                                ],
+                                                       "operationId":  "login",
+                                                       "requestBody":  {
+                                                                           "content":  {
+                                                                                           "application/json":  {
+                                                                                                                    "schema":  {
+                                                                                                                                   "$ref":  "#/components/schemas/LoginRequest"
+                                                                                                                               }
+                                                                                                                }
+                                                                                       },
+                                                                           "required":  true
+                                                                       },
+                                                       "responses":  {
+                                                                         "403":  {
+                                                                                     "description":  "Forbidden",
+                                                                                     "content":  {
+                                                                                                     "*/*":  {
+                                                                                                                 "schema":  {
+                                                                                                                                "type":  "object",
+                                                                                                                                "additionalProperties":  {
+                                                                                                                                                             "type":  "string"
+                                                                                                                                                         }
+                                                                                                                            }
+                                                                                                             }
+                                                                                                 }
+                                                                                 },
+                                                                         "200":  {
+                                                                                     "description":  "OK",
+                                                                                     "content":  {
+                                                                                                     "*/*":  {
+                                                                                                                 "schema":  {
+                                                                                                                                "$ref":  "#/components/schemas/TokenResponse"
+                                                                                                                            }
+                                                                                                             }
+                                                                                                 }
+                                                                                 }
+                                                                     }
+                                                   }
+                                      },
+                  "/api/admin/users/{id}/toggle-active":  {
+                                                              "patch":  {
+                                                                            "tags":  [
+                                                                                         "admin-user-controller"
+                                                                                     ],
+                                                                            "operationId":  "toggleActive",
+                                                                            "parameters":  [
+                                                                                               {
+                                                                                                   "name":  "id",
+                                                                                                   "in":  "path",
+                                                                                                   "required":  true,
+                                                                                                   "schema":  {
+                                                                                                                  "type":  "string",
+                                                                                                                  "format":  "uuid"
+                                                                                                              }
+                                                                                               }
+                                                                                           ],
+                                                                            "responses":  {
+                                                                                              "403":  {
+                                                                                                          "description":  "Forbidden",
+                                                                                                          "content":  {
+                                                                                                                          "*/*":  {
+                                                                                                                                      "schema":  {
+                                                                                                                                                     "type":  "object",
+                                                                                                                                                     "additionalProperties":  {
+                                                                                                                                                                                  "type":  "string"
+                                                                                                                                                                              }
+                                                                                                                                                 }
+                                                                                                                                  }
+                                                                                                                      }
+                                                                                                      },
+                                                                                              "200":  {
+                                                                                                          "description":  "OK",
+                                                                                                          "content":  {
+                                                                                                                          "*/*":  {
+                                                                                                                                      "schema":  {
+                                                                                                                                                     "$ref":  "#/components/schemas/UserResponse"
+                                                                                                                                                 }
+                                                                                                                                  }
+                                                                                                                      }
+                                                                                                      }
+                                                                                          }
+                                                                        }
+                                                          },
+                  "/api/admin/users/{id}/password":  {
+                                                         "patch":  {
+                                                                       "tags":  [
+                                                                                    "admin-user-controller"
+                                                                                ],
+                                                                       "operationId":  "changePassword_1",
+                                                                       "parameters":  [
+                                                                                          {
+                                                                                              "name":  "id",
+                                                                                              "in":  "path",
+                                                                                              "required":  true,
+                                                                                              "schema":  {
+                                                                                                             "type":  "string",
+                                                                                                             "format":  "uuid"
+                                                                                                         }
+                                                                                          }
+                                                                                      ],
+                                                                       "requestBody":  {
+                                                                                           "content":  {
+                                                                                                           "application/json":  {
+                                                                                                                                    "schema":  {
+                                                                                                                                                   "$ref":  "#/components/schemas/ChangePasswordRequest"
+                                                                                                                                               }
+                                                                                                                                }
+                                                                                                       },
+                                                                                           "required":  true
+                                                                                       },
+                                                                       "responses":  {
+                                                                                         "403":  {
+                                                                                                     "description":  "Forbidden",
+                                                                                                     "content":  {
+                                                                                                                     "*/*":  {
+                                                                                                                                 "schema":  {
+                                                                                                                                                "type":  "object",
+                                                                                                                                                "additionalProperties":  {
+                                                                                                                                                                             "type":  "string"
+                                                                                                                                                                         }
+                                                                                                                                            }
+                                                                                                                             }
+                                                                                                                 }
+                                                                                                 },
+                                                                                         "200":  {
+                                                                                                     "description":  "OK",
+                                                                                                     "content":  {
+                                                                                                                     "*/*":  {
+                                                                                                                                 "schema":  {
+                                                                                                                                                "$ref":  "#/components/schemas/MessageResponse"
+                                                                                                                                            }
+                                                                                                                             }
+                                                                                                                 }
+                                                                                                 }
+                                                                                     }
+                                                                   }
+                                                     },
+                  "/api/admin/users/{id}/credentials":  {
+                                                            "patch":  {
+                                                                          "tags":  [
+                                                                                       "admin-user-controller"
+                                                                                   ],
+                                                                          "operationId":  "editUser_1",
+                                                                          "parameters":  [
+                                                                                             {
+                                                                                                 "name":  "id",
+                                                                                                 "in":  "path",
+                                                                                                 "required":  true,
+                                                                                                 "schema":  {
+                                                                                                                "type":  "string",
+                                                                                                                "format":  "uuid"
+                                                                                                            }
+                                                                                             }
+                                                                                         ],
+                                                                          "requestBody":  {
+                                                                                              "content":  {
+                                                                                                              "application/json":  {
+                                                                                                                                       "schema":  {
+                                                                                                                                                      "$ref":  "#/components/schemas/EditUserRequest"
+                                                                                                                                                  }
+                                                                                                                                   }
+                                                                                                          },
+                                                                                              "required":  true
+                                                                                          },
+                                                                          "responses":  {
+                                                                                            "403":  {
+                                                                                                        "description":  "Forbidden",
+                                                                                                        "content":  {
+                                                                                                                        "*/*":  {
+                                                                                                                                    "schema":  {
+                                                                                                                                                   "type":  "object",
+                                                                                                                                                   "additionalProperties":  {
+                                                                                                                                                                                "type":  "string"
+                                                                                                                                                                            }
+                                                                                                                                               }
+                                                                                                                                }
+                                                                                                                    }
+                                                                                                    },
+                                                                                            "200":  {
+                                                                                                        "description":  "OK",
+                                                                                                        "content":  {
+                                                                                                                        "*/*":  {
+                                                                                                                                    "schema":  {
+                                                                                                                                                   "$ref":  "#/components/schemas/UserResponse"
+                                                                                                                                               }
+                                                                                                                                }
+                                                                                                                    }
+                                                                                                    }
+                                                                                        }
+                                                                      }
+                                                        },
+                  "/api/pages/{id}/export":  {
+                                                 "get":  {
+                                                             "tags":  [
+                                                                          "page-controller"
+                                                                      ],
+                                                             "operationId":  "exportPage",
+                                                             "parameters":  [
+                                                                                {
+                                                                                    "name":  "id",
+                                                                                    "in":  "path",
+                                                                                    "required":  true,
+                                                                                    "schema":  {
+                                                                                                   "type":  "string",
+                                                                                                   "format":  "uuid"
+                                                                                               }
+                                                                                },
+                                                                                {
+                                                                                    "name":  "type",
+                                                                                    "in":  "query",
+                                                                                    "required":  true,
+                                                                                    "schema":  {
+                                                                                                   "type":  "string",
+                                                                                                   "enum":  [
+                                                                                                                "MD",
+                                                                                                                "NOTO_PDF"
+                                                                                                            ]
+                                                                                               }
+                                                                                }
+                                                                            ],
+                                                             "responses":  {
+                                                                               "403":  {
+                                                                                           "description":  "Forbidden",
+                                                                                           "content":  {
+                                                                                                           "*/*":  {
+                                                                                                                       "schema":  {
+                                                                                                                                      "type":  "object",
+                                                                                                                                      "additionalProperties":  {
+                                                                                                                                                                   "type":  "string"
+                                                                                                                                                               }
+                                                                                                                                  }
+                                                                                                                   }
+                                                                                                       }
+                                                                                       },
+                                                                               "200":  {
+                                                                                           "description":  "OK",
+                                                                                           "content":  {
+                                                                                                           "*/*":  {
+                                                                                                                       "schema":  {
+                                                                                                                                      "type":  "string",
+                                                                                                                                      "format":  "binary"
+                                                                                                                                  }
+                                                                                                                   }
+                                                                                                       }
+                                                                                       }
+                                                                           }
+                                                         }
+                                             },
+                  "/api/pages/list":  {
+                                          "get":  {
+                                                      "tags":  [
+                                                                   "page-controller"
+                                                               ],
+                                                      "operationId":  "listAllPagesForSummary",
+                                                      "responses":  {
+                                                                        "403":  {
+                                                                                    "description":  "Forbidden",
+                                                                                    "content":  {
+                                                                                                    "*/*":  {
+                                                                                                                "schema":  {
+                                                                                                                               "type":  "object",
+                                                                                                                               "additionalProperties":  {
+                                                                                                                                                            "type":  "string"
+                                                                                                                                                        }
+                                                                                                                           }
+                                                                                                            }
+                                                                                                }
+                                                                                },
+                                                                        "200":  {
+                                                                                    "description":  "OK",
+                                                                                    "content":  {
+                                                                                                    "*/*":  {
+                                                                                                                "schema":  {
+                                                                                                                               "type":  "array",
+                                                                                                                               "items":  {
+                                                                                                                                             "$ref":  "#/components/schemas/PageSummaryResponse"
+                                                                                                                                         }
+                                                                                                                           }
+                                                                                                            }
+                                                                                                }
+                                                                                }
+                                                                    }
+                                                  }
+                                      },
+                  "/api/media":  {
+                                     "get":  {
+                                                 "tags":  [
+                                                              "media-controller"
+                                                          ],
+                                                 "operationId":  "listAllMedia",
+                                                 "parameters":  [
+                                                                    {
+                                                                        "name":  "pageable",
+                                                                        "in":  "query",
+                                                                        "required":  true,
+                                                                        "schema":  {
+                                                                                       "$ref":  "#/components/schemas/Pageable"
+                                                                                   }
+                                                                    },
+                                                                    {
+                                                                        "name":  "filter",
+                                                                        "in":  "query",
+                                                                        "required":  false,
+                                                                        "schema":  {
+                                                                                       "type":  "string"
+                                                                                   }
+                                                                    }
+                                                                ],
+                                                 "responses":  {
+                                                                   "403":  {
+                                                                               "description":  "Forbidden",
+                                                                               "content":  {
+                                                                                               "*/*":  {
+                                                                                                           "schema":  {
+                                                                                                                          "type":  "object",
+                                                                                                                          "additionalProperties":  {
+                                                                                                                                                       "type":  "string"
+                                                                                                                                                   }
+                                                                                                                      }
+                                                                                                       }
+                                                                                           }
+                                                                           },
+                                                                   "200":  {
+                                                                               "description":  "OK",
+                                                                               "content":  {
+                                                                                               "*/*":  {
+                                                                                                           "schema":  {
+                                                                                                                          "$ref":  "#/components/schemas/PageMediaResponse"
+                                                                                                                      }
+                                                                                                       }
+                                                                                           }
+                                                                           }
+                                                               }
+                                             }
+                                 },
+                  "/api/me":  {
+                                  "get":  {
+                                              "tags":  [
+                                                           "me-controller"
+                                                       ],
+                                              "operationId":  "getMe",
+                                              "responses":  {
+                                                                "403":  {
+                                                                            "description":  "Forbidden",
+                                                                            "content":  {
+                                                                                            "*/*":  {
+                                                                                                        "schema":  {
+                                                                                                                       "type":  "object",
+                                                                                                                       "additionalProperties":  {
+                                                                                                                                                    "type":  "string"
+                                                                                                                                                }
+                                                                                                                   }
+                                                                                                    }
+                                                                                        }
+                                                                        },
+                                                                "200":  {
+                                                                            "description":  "OK",
+                                                                            "content":  {
+                                                                                            "*/*":  {
+                                                                                                        "schema":  {
+                                                                                                                       "$ref":  "#/components/schemas/UserResponse"
+                                                                                                                   }
+                                                                                                    }
+                                                                                        }
+                                                                        }
+                                                            }
+                                          }
+                              },
+                  "/api/admin/users":  {
+                                           "get":  {
+                                                       "tags":  [
+                                                                    "admin-user-controller"
+                                                                ],
+                                                       "operationId":  "listUsers",
+                                                       "parameters":  [
+                                                                          {
+                                                                              "name":  "pageable",
+                                                                              "in":  "query",
+                                                                              "required":  true,
+                                                                              "schema":  {
+                                                                                             "$ref":  "#/components/schemas/Pageable"
+                                                                                         }
+                                                                          },
+                                                                          {
+                                                                              "name":  "filter",
+                                                                              "in":  "query",
+                                                                              "required":  false,
+                                                                              "schema":  {
+                                                                                             "type":  "string"
+                                                                                         }
+                                                                          },
+                                                                          {
+                                                                              "name":  "isActive",
+                                                                              "in":  "query",
+                                                                              "required":  false,
+                                                                              "schema":  {
+                                                                                             "type":  "boolean"
+                                                                                         }
+                                                                          },
+                                                                          {
+                                                                              "name":  "createdAfter",
+                                                                              "in":  "query",
+                                                                              "required":  false,
+                                                                              "schema":  {
+                                                                                             "type":  "string",
+                                                                                             "format":  "date-time"
+                                                                                         }
+                                                                          },
+                                                                          {
+                                                                              "name":  "createdBefore",
+                                                                              "in":  "query",
+                                                                              "required":  false,
+                                                                              "schema":  {
+                                                                                             "type":  "string",
+                                                                                             "format":  "date-time"
+                                                                                         }
+                                                                          }
+                                                                      ],
+                                                       "responses":  {
+                                                                         "403":  {
+                                                                                     "description":  "Forbidden",
+                                                                                     "content":  {
+                                                                                                     "*/*":  {
+                                                                                                                 "schema":  {
+                                                                                                                                "type":  "object",
+                                                                                                                                "additionalProperties":  {
+                                                                                                                                                             "type":  "string"
+                                                                                                                                                         }
+                                                                                                                            }
+                                                                                                             }
+                                                                                                 }
+                                                                                 },
+                                                                         "200":  {
+                                                                                     "description":  "OK",
+                                                                                     "content":  {
+                                                                                                     "*/*":  {
+                                                                                                                 "schema":  {
+                                                                                                                                "$ref":  "#/components/schemas/PageUserResponse"
+                                                                                                                            }
+                                                                                                             }
+                                                                                                 }
+                                                                                 }
+                                                                     }
+                                                   }
+                                       },
+                  "/api/admin/users/list":  {
+                                                "get":  {
+                                                            "tags":  [
+                                                                         "admin-user-controller"
+                                                                     ],
+                                                            "operationId":  "listUsersToList",
+                                                            "responses":  {
+                                                                              "403":  {
+                                                                                          "description":  "Forbidden",
+                                                                                          "content":  {
+                                                                                                          "*/*":  {
+                                                                                                                      "schema":  {
+                                                                                                                                     "type":  "object",
+                                                                                                                                     "additionalProperties":  {
+                                                                                                                                                                  "type":  "string"
+                                                                                                                                                              }
+                                                                                                                                 }
+                                                                                                                  }
+                                                                                                      }
+                                                                                      },
+                                                                              "200":  {
+                                                                                          "description":  "OK",
+                                                                                          "content":  {
+                                                                                                          "*/*":  {
+                                                                                                                      "schema":  {
+                                                                                                                                     "type":  "array",
+                                                                                                                                     "items":  {
+                                                                                                                                                   "$ref":  "#/components/schemas/UserResponse"
+                                                                                                                                               }
+                                                                                                                                 }
+                                                                                                                  }
+                                                                                                      }
+                                                                                      }
+                                                                          }
+                                                        }
+                                            },
+                  "/api/media/{id}":  {
+                                          "delete":  {
+                                                         "tags":  [
+                                                                      "media-controller"
+                                                                  ],
+                                                         "operationId":  "deleteMedia",
+                                                         "parameters":  [
+                                                                            {
+                                                                                "name":  "id",
+                                                                                "in":  "path",
+                                                                                "required":  true,
+                                                                                "schema":  {
+                                                                                               "type":  "string",
+                                                                                               "format":  "uuid"
+                                                                                           }
+                                                                            }
+                                                                        ],
+                                                         "responses":  {
+                                                                           "403":  {
+                                                                                       "description":  "Forbidden",
+                                                                                       "content":  {
+                                                                                                       "*/*":  {
+                                                                                                                   "schema":  {
+                                                                                                                                  "type":  "object",
+                                                                                                                                  "additionalProperties":  {
+                                                                                                                                                               "type":  "string"
+                                                                                                                                                           }
+                                                                                                                              }
+                                                                                                               }
+                                                                                                   }
+                                                                                   },
+                                                                           "200":  {
+                                                                                       "description":  "OK",
+                                                                                       "content":  {
+                                                                                                       "*/*":  {
+                                                                                                                   "schema":  {
+                                                                                                                                  "type":  "object"
+                                                                                                                              }
+                                                                                                               }
+                                                                                                   }
+                                                                                   }
+                                                                       }
+                                                     }
+                                      },
+                  "/api/admin/users/{id}":  {
+                                                "delete":  {
+                                                               "tags":  [
+                                                                            "admin-user-controller"
+                                                                        ],
+                                                               "operationId":  "deleteUser",
+                                                               "parameters":  [
+                                                                                  {
+                                                                                      "name":  "id",
+                                                                                      "in":  "path",
+                                                                                      "required":  true,
+                                                                                      "schema":  {
+                                                                                                     "type":  "string",
+                                                                                                     "format":  "uuid"
+                                                                                                 }
+                                                                                  }
+                                                                              ],
+                                                               "responses":  {
+                                                                                 "403":  {
+                                                                                             "description":  "Forbidden",
+                                                                                             "content":  {
+                                                                                                             "*/*":  {
+                                                                                                                         "schema":  {
+                                                                                                                                        "type":  "object",
+                                                                                                                                        "additionalProperties":  {
+                                                                                                                                                                     "type":  "string"
+                                                                                                                                                                 }
+                                                                                                                                    }
+                                                                                                                     }
+                                                                                                         }
+                                                                                         },
+                                                                                 "200":  {
+                                                                                             "description":  "OK",
+                                                                                             "content":  {
+                                                                                                             "*/*":  {
+                                                                                                                         "schema":  {
+                                                                                                                                        "$ref":  "#/components/schemas/MessageResponse"
+                                                                                                                                    }
+                                                                                                                     }
+                                                                                                         }
+                                                                                         }
+                                                                             }
+                                                           }
+                                            }
+              },
+    "components":  {
+                       "schemas":  {
+                                       "PageRequest":  {
+                                                           "type":  "object",
+                                                           "properties":  {
+                                                                              "title":  {
+                                                                                            "type":  "string"
+                                                                                        },
+                                                                              "content":  {
+                                                                                              "type":  "string"
+                                                                                          }
+                                                                          }
+                                                       },
+                                       "PageResponse":  {
+                                                            "type":  "object",
+                                                            "properties":  {
+                                                                               "id":  {
+                                                                                          "type":  "string",
+                                                                                          "format":  "uuid"
+                                                                                      },
+                                                                               "title":  {
+                                                                                             "type":  "string"
+                                                                                         },
+                                                                               "content":  {
+                                                                                               "type":  "string"
+                                                                                           },
+                                                                               "createdAt":  {
+                                                                                                 "type":  "string",
+                                                                                                 "format":  "date-time"
+                                                                                             },
+                                                                               "updatedAt":  {
+                                                                                                 "type":  "string",
+                                                                                                 "format":  "date-time"
+                                                                                             }
+                                                                           }
+                                                        },
+                                       "CreateUserRequest":  {
+                                                                 "required":  [
+                                                                                  "confirmPassword",
+                                                                                  "email",
+                                                                                  "password",
+                                                                                  "username"
+                                                                              ],
+                                                                 "type":  "object",
+                                                                 "properties":  {
+                                                                                    "username":  {
+                                                                                                     "type":  "string"
+                                                                                                 },
+                                                                                    "email":  {
+                                                                                                  "type":  "string"
+                                                                                              },
+                                                                                    "password":  {
+                                                                                                     "maxLength":  2147483647,
+                                                                                                     "minLength":  6,
+                                                                                                     "type":  "string"
+                                                                                                 },
+                                                                                    "confirmPassword":  {
+                                                                                                            "maxLength":  2147483647,
+                                                                                                            "minLength":  6,
+                                                                                                            "type":  "string"
+                                                                                                        }
+                                                                                }
+                                                             },
+                                       "UserResponse":  {
+                                                            "type":  "object",
+                                                            "properties":  {
+                                                                               "id":  {
+                                                                                          "type":  "string",
+                                                                                          "format":  "uuid"
+                                                                                      },
+                                                                               "username":  {
+                                                                                                "type":  "string"
+                                                                                            },
+                                                                               "email":  {
+                                                                                             "type":  "string"
+                                                                                         },
+                                                                               "profileImageUrl":  {
+                                                                                                       "type":  "string"
+                                                                                                   },
+                                                                               "isActive":  {
+                                                                                                "type":  "boolean"
+                                                                                            },
+                                                                               "createdAt":  {
+                                                                                                 "type":  "string",
+                                                                                                 "format":  "date-time"
+                                                                                             },
+                                                                               "roles":  {
+                                                                                             "uniqueItems":  true,
+                                                                                             "type":  "array",
+                                                                                             "items":  {
+                                                                                                           "type":  "string"
+                                                                                                       }
+                                                                                         }
+                                                                           }
+                                                        },
+                                       "MediaRequest":  {
+                                                            "type":  "object",
+                                                            "properties":  {
+                                                                               "file":  {
+                                                                                            "type":  "string",
+                                                                                            "format":  "binary"
+                                                                                        }
+                                                                           }
+                                                        },
+                                       "EditUserRequest":  {
+                                                               "required":  [
+                                                                                "email",
+                                                                                "username"
+                                                                            ],
+                                                               "type":  "object",
+                                                               "properties":  {
+                                                                                  "username":  {
+                                                                                                   "type":  "string"
+                                                                                               },
+                                                                                  "email":  {
+                                                                                                "type":  "string"
+                                                                                            }
+                                                                              }
+                                                           },
+                                       "ChangePasswordRequest":  {
+                                                                     "required":  [
+                                                                                      "newPassword",
+                                                                                      "oldPassword"
+                                                                                  ],
+                                                                     "type":  "object",
+                                                                     "properties":  {
+                                                                                        "oldPassword":  {
+                                                                                                            "maxLength":  2147483647,
+                                                                                                            "minLength":  6,
+                                                                                                            "type":  "string"
+                                                                                                        },
+                                                                                        "newPassword":  {
+                                                                                                            "maxLength":  2147483647,
+                                                                                                            "minLength":  6,
+                                                                                                            "type":  "string"
+                                                                                                        }
+                                                                                    }
+                                                                 },
+                                       "MessageResponse":  {
+                                                               "type":  "object",
+                                                               "properties":  {
+                                                                                  "message":  {
+                                                                                                  "type":  "string"
+                                                                                              }
+                                                                              }
+                                                           },
+                                       "MediaResponse":  {
+                                                             "type":  "object",
+                                                             "properties":  {
+                                                                                "id":  {
+                                                                                           "type":  "string",
+                                                                                           "format":  "uuid"
+                                                                                       },
+                                                                                "fileName":  {
+                                                                                                 "type":  "string"
+                                                                                             },
+                                                                                "url":  {
+                                                                                            "type":  "string"
+                                                                                        },
+                                                                                "markdown":  {
+                                                                                                 "type":  "string"
+                                                                                             },
+                                                                                "createdAt":  {
+                                                                                                  "type":  "string",
+                                                                                                  "format":  "date-time"
+                                                                                              }
+                                                                            }
+                                                         },
+                                       "RefreshRequest":  {
+                                                              "required":  [
+                                                                               "refreshToken"
+                                                                           ],
+                                                              "type":  "object",
+                                                              "properties":  {
+                                                                                 "refreshToken":  {
+                                                                                                      "type":  "string"
+                                                                                                  }
+                                                                             }
+                                                          },
+                                       "TokenResponse":  {
+                                                             "type":  "object",
+                                                             "properties":  {
+                                                                                "token":  {
+                                                                                              "type":  "string"
+                                                                                          },
+                                                                                "refreshToken":  {
+                                                                                                     "type":  "string"
+                                                                                                 }
+                                                                            }
+                                                         },
+                                       "LoginRequest":  {
+                                                            "required":  [
+                                                                             "password",
+                                                                             "username"
+                                                                         ],
+                                                            "type":  "object",
+                                                            "properties":  {
+                                                                               "username":  {
+                                                                                                "type":  "string"
+                                                                                            },
+                                                                               "password":  {
+                                                                                                "type":  "string"
+                                                                                            }
+                                                                           }
+                                                        },
+                                       "PageSummaryResponse":  {
+                                                                   "type":  "object",
+                                                                   "properties":  {
+                                                                                      "id":  {
+                                                                                                 "type":  "string",
+                                                                                                 "format":  "uuid"
+                                                                                             },
+                                                                                      "title":  {
+                                                                                                    "type":  "string"
+                                                                                                },
+                                                                                      "updatedAt":  {
+                                                                                                        "type":  "string",
+                                                                                                        "format":  "date-time"
+                                                                                                    }
+                                                                                  }
+                                                               },
+                                       "Pageable":  {
+                                                        "type":  "object",
+                                                        "properties":  {
+                                                                           "page":  {
+                                                                                        "minimum":  0,
+                                                                                        "type":  "integer",
+                                                                                        "format":  "int32"
+                                                                                    },
+                                                                           "size":  {
+                                                                                        "minimum":  1,
+                                                                                        "type":  "integer",
+                                                                                        "format":  "int32"
+                                                                                    },
+                                                                           "sort":  {
+                                                                                        "type":  "array",
+                                                                                        "items":  {
+                                                                                                      "type":  "string"
+                                                                                                  }
+                                                                                    }
+                                                                       }
+                                                    },
+                                       "PageMediaResponse":  {
+                                                                 "type":  "object",
+                                                                 "properties":  {
+                                                                                    "totalPages":  {
+                                                                                                       "type":  "integer",
+                                                                                                       "format":  "int32"
+                                                                                                   },
+                                                                                    "totalElements":  {
+                                                                                                          "type":  "integer",
+                                                                                                          "format":  "int64"
+                                                                                                      },
+                                                                                    "size":  {
+                                                                                                 "type":  "integer",
+                                                                                                 "format":  "int32"
+                                                                                             },
+                                                                                    "content":  {
+                                                                                                    "type":  "array",
+                                                                                                    "items":  {
+                                                                                                                  "$ref":  "#/components/schemas/MediaResponse"
+                                                                                                              }
+                                                                                                },
+                                                                                    "number":  {
+                                                                                                   "type":  "integer",
+                                                                                                   "format":  "int32"
+                                                                                               },
+                                                                                    "sort":  {
+                                                                                                 "$ref":  "#/components/schemas/SortObject"
+                                                                                             },
+                                                                                    "first":  {
+                                                                                                  "type":  "boolean"
+                                                                                              },
+                                                                                    "last":  {
+                                                                                                 "type":  "boolean"
+                                                                                             },
+                                                                                    "numberOfElements":  {
+                                                                                                             "type":  "integer",
+                                                                                                             "format":  "int32"
+                                                                                                         },
+                                                                                    "pageable":  {
+                                                                                                     "$ref":  "#/components/schemas/PageableObject"
+                                                                                                 },
+                                                                                    "empty":  {
+                                                                                                  "type":  "boolean"
+                                                                                              }
+                                                                                }
+                                                             },
+                                       "PageableObject":  {
+                                                              "type":  "object",
+                                                              "properties":  {
+                                                                                 "offset":  {
+                                                                                                "type":  "integer",
+                                                                                                "format":  "int64"
+                                                                                            },
+                                                                                 "sort":  {
+                                                                                              "$ref":  "#/components/schemas/SortObject"
+                                                                                          },
+                                                                                 "unpaged":  {
+                                                                                                 "type":  "boolean"
+                                                                                             },
+                                                                                 "pageNumber":  {
+                                                                                                    "type":  "integer",
+                                                                                                    "format":  "int32"
+                                                                                                },
+                                                                                 "pageSize":  {
+                                                                                                  "type":  "integer",
+                                                                                                  "format":  "int32"
+                                                                                              },
+                                                                                 "paged":  {
+                                                                                               "type":  "boolean"
+                                                                                           }
+                                                                             }
+                                                          },
+                                       "SortObject":  {
+                                                          "type":  "object",
+                                                          "properties":  {
+                                                                             "empty":  {
+                                                                                           "type":  "boolean"
+                                                                                       },
+                                                                             "unsorted":  {
+                                                                                              "type":  "boolean"
+                                                                                          },
+                                                                             "sorted":  {
+                                                                                            "type":  "boolean"
+                                                                                        }
+                                                                         }
+                                                      },
+                                       "PageUserResponse":  {
+                                                                "type":  "object",
+                                                                "properties":  {
+                                                                                   "totalPages":  {
+                                                                                                      "type":  "integer",
+                                                                                                      "format":  "int32"
+                                                                                                  },
+                                                                                   "totalElements":  {
+                                                                                                         "type":  "integer",
+                                                                                                         "format":  "int64"
+                                                                                                     },
+                                                                                   "size":  {
+                                                                                                "type":  "integer",
+                                                                                                "format":  "int32"
+                                                                                            },
+                                                                                   "content":  {
+                                                                                                   "type":  "array",
+                                                                                                   "items":  {
+                                                                                                                 "$ref":  "#/components/schemas/UserResponse"
+                                                                                                             }
+                                                                                               },
+                                                                                   "number":  {
+                                                                                                  "type":  "integer",
+                                                                                                  "format":  "int32"
+                                                                                              },
+                                                                                   "sort":  {
+                                                                                                "$ref":  "#/components/schemas/SortObject"
+                                                                                            },
+                                                                                   "first":  {
+                                                                                                 "type":  "boolean"
+                                                                                             },
+                                                                                   "last":  {
+                                                                                                "type":  "boolean"
+                                                                                            },
+                                                                                   "numberOfElements":  {
+                                                                                                            "type":  "integer",
+                                                                                                            "format":  "int32"
+                                                                                                        },
+                                                                                   "pageable":  {
+                                                                                                    "$ref":  "#/components/schemas/PageableObject"
+                                                                                                },
+                                                                                   "empty":  {
+                                                                                                 "type":  "boolean"
+                                                                                             }
+                                                                               }
+                                                            }
+                                   },
+                       "securitySchemes":  {
+                                               "Bearer Authentication":  {
+                                                                             "type":  "http",
+                                                                             "description":  "Insira o token JWT no formato: Bearer {token}",
+                                                                             "scheme":  "bearer",
+                                                                             "bearerFormat":  "JWT"
+                                                                         }
+                                           }
+                   }
+}

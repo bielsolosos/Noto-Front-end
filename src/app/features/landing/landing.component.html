@@ -1,0 +1,183 @@
+<div class="relative min-h-screen w-full overflow-hidden">
+  <!-- Background estático -->
+  <div class="absolute inset-0 z-0">
+    <div class="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-primary/5"></div>
+    <div class="absolute top-0 left-0 w-full h-full">
+      <div class="absolute top-[10%] left-[15%] w-4 h-4 opacity-[0.03] bg-primary rounded-full blur-sm"></div>
+      <div class="absolute top-[25%] right-[20%] w-6 h-6 opacity-[0.04] bg-primary rounded-full blur-md"></div>
+      <div class="absolute top-[60%] left-[10%] w-3 h-3 opacity-[0.05] bg-primary rounded-full blur-sm"></div>
+      <div class="absolute top-[80%] right-[15%] w-5 h-5 opacity-[0.03] bg-primary rounded-full blur-md"></div>
+      <div class="absolute top-[40%] left-[70%] w-4 h-4 opacity-[0.04] bg-primary rounded-full blur-sm"></div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="relative z-10 p-6">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <i class="pi pi-book text-2xl text-primary font-bold"></i>
+        <span class="text-xl font-bold tracking-tight">NOTO</span>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <button
+          (click)="themeService.toggleDarkMode()"
+          class="p-2.5 rounded-lg hover:bg-primary/10 transition-colors duration-200"
+          aria-label="Alternar tema"
+        >
+          <i [class]="themeService.darkMode() ? 'pi pi-sun text-lg text-primary' : 'pi pi-moon text-lg text-primary'"></i>
+        </button>
+
+        <a
+          routerLink="/login"
+          class="px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/10 rounded-lg transition-colors duration-200"
+        >
+          Fazer Login
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="relative z-10 pt-20 pb-28 px-6">
+    <div class="max-w-7xl mx-auto text-center">
+      <div class="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-semibold mb-8">
+        <i class="pi pi-sparkles"></i>
+        <span>Editor de anotações moderno e intuitivo</span>
+      </div>
+
+      <h1 class="text-5xl md:text-7xl font-bold mb-6 tracking-tight leading-none text-foreground">
+        Suas ideias merecem
+        <br />
+        <span class="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+          um lar melhor
+        </span>
+      </h1>
+
+      <p class="text-xl md:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed font-light">
+        Editor de anotações minimalista e poderoso. Organize suas ideias com
+        Markdown, atalhos inteligentes e uma interface que não distrai.
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+        <a
+          routerLink="/login"
+          class="group inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-200 shadow-lg"
+        >
+          <span>Começar agora</span>
+          <i class="pi pi-arrow-right group-hover:translate-x-1 transition-transform"></i>
+        </a>
+
+        <button
+          (click)="scrollToDemo($event)"
+          class="inline-flex items-center gap-2 text-primary hover:bg-primary/10 px-8 py-4 rounded-xl text-lg font-semibold transition-colors duration-200"
+        >
+          Ver demonstração
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="relative z-10 py-20 px-6 border-t border-border/20 bg-card/10">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4 tracking-tight">Feito para produtividade</h2>
+        <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+          Cada funcionalidade foi pensada para tornar suas anotações mais fluidas e organizadas.
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        @for (feature of features; track feature.title) {
+          <div
+            class="group p-6 rounded-2xl bg-card/60 backdrop-blur-md border border-border/40 hover:border-primary/20 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5"
+          >
+            <div class="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
+              <i [class]="feature.iconClass + ' text-xl'"></i>
+            </div>
+            <h3 class="text-lg font-bold mb-2">{{feature.title}}</h3>
+            <p class="text-muted-foreground text-sm leading-relaxed">
+              {{feature.description}}
+            </p>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Demo Section -->
+  <section id="demo-section" class="relative z-10 py-20 px-6">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4 tracking-tight">Veja o editor em ação</h2>
+        <p class="text-lg text-muted-foreground">
+          Digite e veja a formatação acontecer em tempo real
+        </p>
+      </div>
+
+      <div class="bg-card/75 backdrop-blur-md border border-border/50 rounded-2xl overflow-hidden shadow-2xl">
+        <div class="bg-muted/30 px-6 py-4 border-b border-border/50">
+          <div class="flex items-center gap-2">
+            <div class="flex gap-2">
+              <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+              <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+              <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+            </div>
+            <span class="text-sm text-muted-foreground ml-4 font-medium">
+              Editor NOTO (Simulação)
+            </span>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 h-96">
+          <!-- Editor lado esquerdo -->
+          <div class="relative">
+            <textarea
+              [ngModel]="demoContent()"
+              (ngModelChange)="demoContent.set($event)"
+              class="w-full h-full p-6 bg-transparent resize-none focus:outline-none border-0 font-mono text-sm leading-relaxed"
+              placeholder="Digite aqui seu Markdown..."
+            ></textarea>
+          </div>
+
+          <!-- Preview lado direito -->
+          <div class="border-l border-border/50">
+            <div class="w-full h-full p-6 overflow-y-auto bg-card/20">
+              <div
+                class="prose prose-sm dark:prose-invert max-w-none"
+                [innerHTML]="demoContent() | markdown"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="relative z-10 py-12 px-6 border-t border-border/40 bg-card/5">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="flex items-center gap-3">
+        <i class="pi pi-book text-2xl text-primary font-bold"></i>
+        <span class="font-bold tracking-tight">NOTO</span>
+      </div>
+
+      <div class="flex flex-col md:flex-row items-center gap-6">
+        <a
+          href="https://discord.com/users/bielsolosos"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors duration-200"
+        >
+          <i class="pi pi-discord text-lg"></i>
+          <span>Contato no Discord</span>
+        </a>
+
+        <p class="text-sm text-muted-foreground">
+          © 2026 NOTO. Criado com ❤️ por bielsolosos
+        </p>
+      </div>
+    </div>
+  </footer>
+</div>

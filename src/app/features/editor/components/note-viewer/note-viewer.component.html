@@ -1,0 +1,28 @@
+<div class="max-w-4xl mx-auto px-4 py-8 md:py-12 animate-fade-in">
+  <!-- Cabeçalho da Nota -->
+  <div class="border-b border-border/80 pb-6 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-3xl md:text-4xl font-bold text-foreground tracking-tight leading-tight">
+        {{ title || 'Sem título' }}
+      </h1>
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-xs text-muted-foreground font-light">
+        <span class="flex items-center gap-1">
+          <i class="pi pi-calendar-plus"></i>
+          <span>Criado em: {{ createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+        </span>
+        <span class="hidden md:inline text-muted-foreground/30">•</span>
+        <span class="flex items-center gap-1">
+          <i class="pi pi-calendar-times"></i>
+          <span>Atualizado em: {{ updatedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Corpo da Nota (Markdown Renderizado) -->
+  <div
+    class="prose prose-neutral dark:prose-invert max-w-none prose-rose focus:outline-none"
+    [innerHTML]="content | markdown"
+    (click)="handleContentClick($event)"
+  ></div>
+</div>

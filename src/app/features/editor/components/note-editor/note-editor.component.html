@@ -1,0 +1,200 @@
+<div
+  class="transition-all duration-300 opacity-100 translate-y-0 w-full"
+  [ngClass]="{
+    'fixed inset-0 z-50 bg-background': isFullscreen(),
+    'max-w-7xl mx-auto p-4 md:p-8': !isFullscreen()
+  }"
+>
+  <div class="h-full flex flex-col">
+    <!-- Header de Input de Título -->
+    <div class="mb-4">
+      <input
+        [ngModel]="title"
+        (ngModelChange)="titleChange.emit($event)"
+        type="text"
+        placeholder="Título da entrada..."
+        class="w-full text-2xl md:text-4xl font-bold bg-transparent border-none focus:outline-none placeholder-muted-foreground text-foreground px-0 focus-visible:ring-0 cursor-text"
+      />
+    </div>
+
+    <!-- Barra de Ferramentas de Configuração -->
+    <div class="flex flex-wrap items-center gap-2 mb-3 p-2 border border-border/80 rounded-lg bg-card shadow-sm text-xs select-none">
+      <button
+        type="button"
+        (click)="setEditorMode('edit')"
+        class="h-8 rounded px-3 flex items-center gap-1.5 font-semibold cursor-pointer transition-colors"
+        [ngClass]="{
+          'bg-primary text-primary-foreground': editorMode() === 'edit',
+          'hover:bg-primary/10 text-foreground': editorMode() !== 'edit'
+        }"
+      >
+        <i class="pi pi-pencil"></i>
+        <span>Editor</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="setEditorMode('preview')"
+        class="h-8 rounded px-3 flex items-center gap-1.5 font-semibold cursor-pointer transition-colors"
+        [ngClass]="{
+          'bg-primary text-primary-foreground': editorMode() === 'preview',
+          'hover:bg-primary/10 text-foreground': editorMode() !== 'preview'
+        }"
+      >
+        <i class="pi pi-eye-slash"></i>
+        <span>Preview</span>
+      </button>
+
+      <button
+        type="button"
+        (click)="setEditorMode('split')"
+        class="h-8 rounded px-3 flex items-center gap-1.5 font-semibold cursor-pointer transition-colors"
+        [ngClass]="{
+          'bg-primary text-primary-foreground': editorMode() === 'split',
+          'hover:bg-primary/10 text-foreground': editorMode() !== 'split'
+        }"
+      >
+        <i class="pi pi-eye"></i>
+        <span>Split</span>
+      </button>
+
+      <div class="ml-auto flex items-center gap-4 animate-fade-in">
+        <!-- Status de Salvamento -->
+        <span class="text-xs text-muted-foreground flex items-center gap-2">
+          @if (isSaving) {
+            <span class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
+            <span>Salvando...</span>
+          } @else if (hasUnsavedChanges) {
+            <span class="w-2 h-2 rounded-full bg-zinc-500"></span>
+            <span>Editando...</span>
+          } @else {
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>Salvo</span>
+          }
+        </span>
+
+        <!-- Botão Auto-Save -->
+        <button
+          type="button"
+          (click)="toggleAutoSave()"
+          class="h-8 rounded px-3 font-semibold flex items-center gap-1.5 cursor-pointer border border-border bg-card transition-colors hover:bg-primary/10"
+        >
+          <i class="pi pi-save"></i>
+          <span>Auto-Save: {{ isAutoSaveEnabled() ? 'ON' : 'OFF' }}</span>
+        </button>
+
+        <!-- Botão Salvar Manual (se Auto-Save desativado) -->
+        @if (!isAutoSaveEnabled() && hasUnsavedChanges) {
+          <button
+            type="button"
+            (click)="savePage.emit()"
+            class="h-8 rounded px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold flex items-center gap-1.5 cursor-pointer shadow-sm animate-fade-in"
+          >
+            <i class="pi pi-save"></i>
+            <span>Salvar</span>
+          </button>
+        }
+
+        <!-- Toggle Fullscreen -->
+        <button
+          type="button"
+          (click)="isFullscreen.update(v => !v)"
+          class="h-8 rounded px-3 font-semibold flex items-center gap-1.5 cursor-pointer border border-border bg-card transition-colors hover:bg-primary/10"
+        >
+          <i [class]="isFullscreen() ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
+          <span>{{ isFullscreen() ? 'Sair' : 'Fullscreen' }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Barra de Atalhos Rápidos (Markdown Formatting) -->
+    @if (editorMode() === 'edit' || editorMode() === 'split') {
+      <div class="flex flex-wrap items-center gap-1 p-1.5 mb-2 border border-border/80 rounded-lg bg-card/50 shadow-sm select-none">
+        <button type="button" (click)="insertBold()" class="h-7 w-8 rounded hover:bg-primary/10 flex items-center justify-center cursor-pointer text-foreground" title="Bold (Ctrl+B)">
+          <i class="pi pi-bold text-xs"></i>
+        </button>
+        <button type="button" (click)="insertItalic()" class="h-7 w-8 rounded hover:bg-primary/10 flex items-center justify-center cursor-pointer text-foreground" title="Italic (Ctrl+I)">
+          <i class="pi pi-italic text-xs"></i>
+        </button>
+
+        <span class="w-px h-5 bg-border mx-1"></span>
+
+        <button type="button" (click)="insertH1()" class="h-7 px-2 rounded hover:bg-primary/10 flex items-center justify-center cursor-pointer text-foreground font-bold text-xs" title="H1">H1</button>
+        <button type="button" (click)="insertH2()" class="h-7 px-2 rounded hover:bg-primary/10 flex items-center justify-center cursor-pointer text-foreground font-bold text-xs" title="H2">H2</button>
+        <button type="button" (click)="insertH3()" class="h-7 px-2 rounded hover:bg-primary/10 flex items-center justify-center cursor-pointer text-foreground font-bold text-xs" title="H3">H3</button>
+
+        <span class="w-px h-5 bg-border mx-1"></span>
+
+        <button type="button" (click)="insertList()" class="h-7 w-8 rounded hover:bg-primary/10 flex items-center justify-center cursor-pointer text-foreground" title="Lista Comum">
+          <i class="pi pi-list text-xs"></i>
+        </button>
+        <button type="button" (click)="insertOrderedList()" class="h-7 w-8 rounded hover:bg-primary/10 flex items-center justify-center cursor-pointer text-foreground" title="Lista Numerada">
+          <i class="pi pi-sort-numeric-down text-xs"></i>
+        </button>
+
+        <span class="w-px h-5 bg-border mx-1"></span>
+
+        <button type="button" (click)="insertQuote()" class="h-7 w-8 rounded hover:bg-primary/10 flex items-center justify-center cursor-pointer text-foreground" title="Citação">
+          <i class="pi pi-comment text-xs"></i>
+        </button>
+        <button type="button" (click)="insertCode()" class="h-7 w-8 rounded hover:bg-primary/10 flex items-center justify-center cursor-pointer text-foreground" title="Código Inline">
+          <i class="pi pi-code text-xs"></i>
+        </button>
+        <button type="button" (click)="insertLink()" class="h-7 w-8 rounded hover:bg-primary/10 flex items-center justify-center cursor-pointer text-foreground" title="Link (Ctrl+K)">
+          <i class="pi pi-link text-xs"></i>
+        </button>
+        <button type="button" (click)="insertImageLink()" class="h-7 w-8 rounded hover:bg-primary/10 flex items-center justify-center cursor-pointer text-foreground" title="Marcador de Imagem">
+          <i class="pi pi-image text-xs"></i>
+        </button>
+        
+        <div class="ml-auto flex gap-1">
+          <button type="button" (click)="undo()" class="h-7 w-8 rounded hover:bg-primary/10 flex items-center justify-center cursor-pointer text-foreground" title="Desfazer">
+            <i class="pi pi-undo text-xs"></i>
+          </button>
+          <button type="button" (click)="redo()" class="h-7 w-8 rounded hover:bg-primary/10 flex items-center justify-center cursor-pointer text-foreground" title="Refazer">
+            <i class="pi pi-refresh text-xs"></i>
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Área de Exibição / Edição -->
+    <div
+      class="border border-border/80 rounded-lg overflow-hidden flex bg-card shadow-inner"
+      [ngClass]="{
+        'h-[calc(100vh-270px)]': isFullscreen(),
+        'h-[calc(100vh-320px)] min-h-[580px]': !isFullscreen()
+      }"
+    >
+      <!-- Container do CodeMirror (Editor) -->
+      <div
+        #editorContainer
+        class="flex-1 bg-background relative overflow-hidden"
+        [ngClass]="{
+          'hidden': editorMode() === 'preview',
+          'block': editorMode() !== 'preview'
+        }"
+      ></div>
+
+      <!-- Divisor Vertical no modo Split -->
+      @if (editorMode() === 'split') {
+        <div class="w-px bg-border/80 flex-shrink-0"></div>
+      }
+
+      <!-- Container do Preview (Visualizador) -->
+      <div
+        #previewContainer
+        (scroll)="onPreviewScroll()"
+        class="flex-1 bg-background overflow-y-auto relative p-6 prose prose-neutral dark:prose-invert max-w-none focus:outline-none"
+        [ngClass]="{
+          'hidden': editorMode() === 'edit',
+          'block': editorMode() !== 'edit',
+          'prose-sm': editorMode() === 'split',
+          'prose-base': editorMode() !== 'split'
+        }"
+        [innerHTML]="content | markdown"
+        (click)="handlePreviewClick($event)"
+      ></div>
+    </div>
+  </div>
+</div>

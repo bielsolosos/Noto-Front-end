@@ -1,0 +1,124 @@
+@import "tailwindcss";
+@import "primeicons/primeicons.css";
+
+@theme {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-primary: hsl(var(--primary));
+  --color-card: hsl(var(--card));
+  --color-border: hsl(var(--border));
+}
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
+  --card: 0 0% 98%;
+  --primary: 343.4 79.7% 53.9%; /* Tom Rosa Principal do Noto/Biel */
+  --border: 240 5.9% 90%;
+  --radius: 0.75rem;
+}
+
+.dark {
+  --background: 0 0% 0%; /* Pure Black */
+  --foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --primary: 343.4 79.7% 53.9%;
+  --border: 240 3.7% 15.9%;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: 'Inter', sans-serif;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+/* Estilos adicionais para Markdown rendering */
+.markdown-img-container {
+  position: relative;
+  display: inline-block;
+  cursor: zoom-in;
+  border-radius: var(--radius);
+  overflow: hidden;
+  max-width: 100%;
+  margin: 1rem 0;
+}
+
+.markdown-img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.markdown-img-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.markdown-img-container:hover .markdown-img-overlay {
+  opacity: 1;
+}
+
+.markdown-img-zoom-icon {
+  color: white;
+  padding: 0.5rem;
+  background-color: rgba(0, 0, 0, 0.6);
+  border-radius: 9999px;
+}
+
+/* Modal styles for custom viewing */
+.image-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.image-modal-content {
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.image-modal-img {
+  max-width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: var(--radius);
+}
+
+.image-modal-close {
+  position: absolute;
+  top: -45px;
+  right: 0;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 36px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 5px;
+}
+
+.image-modal-caption {
+  color: white;
+  margin-top: 15px;
+  font-size: 14px;
+  text-align: center;
+  font-weight: 500;
+}

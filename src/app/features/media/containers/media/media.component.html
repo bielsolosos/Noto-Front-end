@@ -1,0 +1,42 @@
+<div class="min-h-screen bg-background text-foreground transition-colors duration-300">
+  <div class="pt-20 pb-8 animate-fade-in">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Cabeçalho da Galeria -->
+      <div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-bold tracking-tight">Galeria de Mídias</h1>
+          <p class="text-muted-foreground mt-2 text-sm">
+            Gerencie suas imagens e arquivos de mídia
+          </p>
+        </div>
+        <a routerLink="/editor" class="inline-flex items-center gap-2 px-4 h-10 rounded-full border border-border bg-card hover:bg-primary/10 text-xs font-semibold shadow-md transition-colors cursor-pointer self-start sm:self-center">
+          <i class="pi pi-arrow-left"></i>
+          <span>Voltar ao Editor</span>
+        </a>
+      </div>
+
+      <!-- Área de Ações e Lista -->
+      <div class="bg-card rounded-2xl border border-border/60 p-6 shadow-sm">
+        
+        <!-- Barra de Ações (Busca + Upload) (Dumb Component) -->
+        <app-media-upload
+          [searchQuery]="search()"
+          [isUploading]="isUploading()"
+          (searchChange)="handleSearchChange($event)"
+          (uploadFile)="handleUploadFile($event)"
+        ></app-media-upload>
+
+        <!-- Grid e Paginação (Dumb Component) -->
+        <app-media-grid
+          [mediaPage]="mediaPage()"
+          [loading]="loading()"
+          [currentPage]="currentPage()"
+          (deleteMedia)="handleDeleteMedia($event)"
+          (pageChange)="handlePageChange($event)"
+        ></app-media-grid>
+
+      </div>
+    </div>
+  </div>
+</div>

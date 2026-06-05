@@ -1,0 +1,69 @@
+<div class="min-h-screen bg-background text-foreground transition-colors duration-300">
+  <div class="pt-20 pb-8 animate-fade-in">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Cabeçalho Administrativo -->
+      <div class="mb-8 flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-bold tracking-tight">Painel Administrativo</h1>
+          <p class="text-muted-foreground mt-2 text-sm">
+            Gerencie usuários e configurações do sistema
+          </p>
+        </div>
+        <a routerLink="/editor" class="inline-flex items-center gap-2 px-4 h-10 rounded-full border border-border bg-card hover:bg-primary/10 text-xs font-semibold shadow-md transition-colors cursor-pointer">
+          <i class="pi pi-arrow-left"></i>
+          <span>Voltar ao Editor</span>
+        </a>
+      </div>
+
+      <!-- Tabela de Gerenciamento de Usuários -->
+      <div class="bg-card rounded-2xl border border-border/60 p-6 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <h2 class="text-lg font-bold">Gerenciamento de Usuários</h2>
+          
+          <!-- Filtro de busca + Botão de Novo Usuário -->
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <div class="relative w-full sm:w-60">
+              <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs"></i>
+              <input
+                [value]="searchQuery()"
+                (input)="handleSearchChange($event)"
+                type="text"
+                placeholder="Buscar usuários..."
+                class="w-full h-10 pl-9 pr-4 text-xs rounded-lg border border-border/60 bg-background text-foreground focus:ring-1 focus:ring-primary/40 focus:outline-none"
+              />
+            </div>
+            
+            <button
+              type="button"
+              (click)="openCreateModal()"
+              class="h-10 px-5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/95 text-xs font-semibold shadow-md flex items-center justify-center gap-2 cursor-pointer transition-colors"
+            >
+              <i class="pi pi-user-plus"></i>
+              <span>Novo Usuário</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Dumb Table Component -->
+        <app-user-table
+          [users]="filteredUsers()"
+          [loading]="loading()"
+          [currentUserId]="authService.currentUser()?.id"
+          (toggleActive)="handleToggleActive($event)"
+          (deleteUser)="handleDeleteUser($event)"
+        ></app-user-table>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Dumb Modal Component -->
+  <app-create-user-modal
+    [isOpen]="isCreateModalOpen()"
+    [isSubmitting]="isSubmitting()"
+    [error]="createError()"
+    (close)="handleCloseCreateModal()"
+    (createUser)="handleCreateUser($event)"
+  ></app-create-user-modal>
+</div>
