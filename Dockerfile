@@ -10,6 +10,9 @@ RUN yarn install --frozen-lockfile
 # Stage 2: Builder
 FROM node:20-alpine AS builder
 
+ARG APP_ENV=production
+ENV NEXT_PUBLIC_APP_ENV=$APP_ENV
+
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
