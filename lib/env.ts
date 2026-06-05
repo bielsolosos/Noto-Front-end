@@ -3,6 +3,8 @@
  * Centraliza todas as env vars para facilitar o acesso e type-safety
  */
 
+import { environment } from '@/environments/environment';
+
 // Validação simples para garantir que variáveis críticas existem
 const getEnvVar = (key: string, defaultValue?: string): string => {
   const value = process.env[key] || defaultValue;
@@ -14,7 +16,7 @@ const getEnvVar = (key: string, defaultValue?: string): string => {
 
 export const env = {
   // Exposto ao browser; usar NEXT_PUBLIC_ para estar disponível no cliente
-  NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080",
+  NEXT_PUBLIC_API_URL: environment.apiUrl,
 
   // Next.js Environment
   NODE_ENV: process.env.NODE_ENV || "development",
