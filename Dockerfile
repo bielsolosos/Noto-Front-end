@@ -24,6 +24,9 @@ RUN chmod -R +x node_modules/.bin
 # Next.js coleta telemetria anônima - desabilitar em produção
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Limpar qualquer cache residual do Next.js antes do build
+RUN rm -rf .next/cache
+
 RUN yarn build
 
 # Stage 3: Runner (Production)
