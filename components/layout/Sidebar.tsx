@@ -82,7 +82,6 @@ function SidebarPanel({ isMobileLayout }: SidebarPanelProps) {
     setSearchQuery,
     sortParams,
     setSortParams,
-    refreshPageList,
   } = useNotes();
   const { closeSidebar } = useSidebar();
   const { user, logout } = useAuth();
@@ -121,7 +120,6 @@ function SidebarPanel({ isMobileLayout }: SidebarPanelProps) {
   const handleSortChange = (option: SortOption) => {
     setSortParams({ sortBy: option.sortBy, sortOrder: option.sortOrder });
     setIsSortOpen(false);
-    refreshPageList({ sortParams: { sortBy: option.sortBy, sortOrder: option.sortOrder } });
     closeAfterAction();
   };
 

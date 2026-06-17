@@ -91,86 +91,60 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
   const initializedRef = useRef(false);
 
-  // Função para atualizar a URL com filtros (q, sortBy, sortOrder)
-  const updateUrlWithFilters = (q: string, newSortParams: PageSortParams) => {
-    const nextSearchParams = new URLSearchParams(searchParams.toString());
+  // Helper para construir URL limpa sem parâmetros internos do Next.js (_rsc)
+  const buildUrl = (
+    q: string,
+    sp: PageSortParams,
+    pageId: string | null
+  ): string => {
+    const params = new URLSearchParams();
 
     if (q) {
-      nextSearchParams.set("q", q);
-    } else {
-      nextSearchParams.delete("q");
+      params.set("q", q);
     }
-
-    if (newSortParams.sortBy !== "UPDATED_AT" || newSortParams.sortOrder !== "DESC") {
-      nextSearchParams.set("sortBy", newSortParams.sortBy);
-      nextSearchParams.set("sortOrder", newSortParams.sortOrder);
-    } else {
-      nextSearchParams.delete("sortBy");
-      nextSearchParams.delete("sortOrder");
+    if (sp.sortBy !== "UPDATED_AT" || sp.sortOrder !== "DESC") {
+      params.set("sortBy", sp.sortBy);
+      params.set("sortOrder", sp.sortOrder);
     }
-
-    const nextSearch = nextSearchParams.toString();
-    router.replace(nextSearch ? `${pathname}?${nextSearch}` : pathname);
-  };
-
-  // Função para atualizar a URL com o pageId
-  const updateUrlWithPageId = (pageId: string | null) => {
-    const nextSearchParams = new URLSearchParams(searchParams.toString());
-
     if (pageId) {
-      nextSearchParams.set("pageId", pageId);
-    } else {
-      nextSearchParams.delete("pageId");
+      params.set("pageId", pageId);
     }
 
-    const nextSearch = nextSearchParams.toString();
-    router.replace(nextSearch ? `${pathname}?${nextSearch}` : pathname);
+    const search = params.toString();
+    return search ? `${pathname}?${search}` : pathname;
   };
+
+  // Sincronizar estado com URL (URL é a fonte de verdade para parâmetros de filtro)
+  useEffect(() => {
+    if (!initializedRef.current) return;
+
+    const newUrl = buildUrl(searchQuery, sortParams, selectedPageId);
+    router.replace(newUrl);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, sortParams, selectedPageId]);
 
   // Função para atualizar searchQuery e URL
   const handleSetSearchQuery = (q: string) => {
     setSearchQuery(q);
-    updateUrlWithFilters(q, sortParams);
   };
 
   // Função para atualizar sortParams e URL
   const handleSetSortParams = (newSortParams: PageSortParams) => {
     setSortParams(newSortParams);
-    updateUrlWithFilters(searchQuery, newSortParams);
   };
 
-  // Função personalizada para setSelectedPageId que também atualiza a URL
+  // Função para definir página selecionada
   const setSelectedPageIdWithUrl = (pageId: string | null) => {
     setSelectedPageId(pageId);
-    updateUrlWithPageId(pageId);
-  };
-
-  const resolveSelectedPageId = (
-    pages: PageSummaryDto[],
-    pageIdFromUrl: string | null,
-    currentSelectedPageId: string | null
-  ) => {
-    const pageExists = (pageId: string | null) =>
-      pageId ? pages.some((page) => page.id === pageId) : false;
-
-    if (pageExists(pageIdFromUrl)) {
-      return pageIdFromUrl;
-    }
-
-    if (pageExists(currentSelectedPageId)) {
-      return currentSelectedPageId;
-    }
-
-    return pages[0]?.id ?? null;
   };
 
   const prevPageIdRef = useRef<string | null>(null);
+  const refreshInProgressRef = useRef(false);
 
   // Refs para evitar stale closures
   const sortParamsRef = useRef(sortParams);
   const searchQueryRef = useRef(searchQuery);
   const selectedPageIdRef = useRef(selectedPageId);
-  const searchParamsRef = useRef(searchParams);
 
   // Manter refs atualizados
   useEffect(() => {
@@ -184,10 +158,6 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     selectedPageIdRef.current = selectedPageId;
   }, [selectedPageId]);
-
-  useEffect(() => {
-    searchParamsRef.current = searchParams;
-  }, [searchParams]);
 
   useEffect(() => {
     if (selectedPage) {
@@ -205,6 +175,9 @@ export function NotesProvider({ children }: { children: ReactNode }) {
 
   // Carregar lista resumida de páginas
   const refreshPageList = useCallback(async (options: RefreshPageListOptions = {}) => {
+    if (refreshInProgressRef.current) return;
+    refreshInProgressRef.current = true;
+
     try {
       setIsLoadingList(true);
       const effectiveSortParams = options.sortParams || sortParamsRef.current;
@@ -214,20 +187,10 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       const response = await api.get<PageSummaryDto[]>(endpoint);
       setPageSummaries(response.data);
 
-      const pageIdFromUrl = searchParamsRef.current.get("pageId");
-
-      const nextSelectedPageId = resolveSelectedPageId(
-        response.data,
-        pageIdFromUrl,
-        selectedPageIdRef.current
-      );
-
-      if (nextSelectedPageId !== selectedPageIdRef.current) {
-        setSelectedPageId(nextSelectedPageId);
-      }
-
-      if (pageIdFromUrl !== nextSelectedPageId) {
-        updateUrlWithPageId(nextSelectedPageId);
+      // Se nenhuma página está selecionada, selecionar a primeira
+      if (!selectedPageIdRef.current && response.data.length > 0) {
+        const firstPageId = response.data[0].id;
+        setSelectedPageId(firstPageId);
       }
     } catch (error: any) {
       const errorMessage =
@@ -235,6 +198,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       toast.error("Erro ao carregar páginas");
     } finally {
       setIsLoadingList(false);
+      refreshInProgressRef.current = false;
     }
   }, []);
 
@@ -303,7 +267,6 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       if (selectedPageId === pageId) {
         setSelectedPageId(null);
         setSelectedPage(null);
-        updateUrlWithPageId(null);
       }
 
       // Atualizar lista
@@ -419,7 +382,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     setHasUnsavedChanges(true);
   };
 
-  // Inicializar estado a partir da URL e carregar lista
+  // Inicializar estado a partir da URL e carregar lista (apenas uma vez no mount)
   useEffect(() => {
     if (initializedRef.current) return;
     initializedRef.current = true;
@@ -427,6 +390,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     const qParam = searchParams.get("q");
     const sortByParam = searchParams.get("sortBy") as "UPDATED_AT" | "CREATED_AT" | "TITLE" | null;
     const sortOrderParam = searchParams.get("sortOrder") as "DESC" | "ASC" | null;
+    const pageIdFromUrl = searchParams.get("pageId");
 
     if (qParam) {
       setSearchQuery(qParam);
@@ -436,23 +400,20 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       setSortParams({ sortBy: sortByParam, sortOrder: sortOrderParam });
     }
 
+    if (pageIdFromUrl) {
+      setSelectedPageId(pageIdFromUrl);
+    }
+
     refreshPageList();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Re-buscar lista quando sortParams mudar (após inicialização)
+  // Re-buscar lista quando sortParams ou searchQuery mudam (após inicialização)
   useEffect(() => {
     if (!initializedRef.current) return;
     refreshPageList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortParams]);
-
-  // Re-buscar lista quando searchQuery mudar (após inicialização)
-  useEffect(() => {
-    if (!initializedRef.current) return;
-    refreshPageList();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery]);
+  }, [sortParams, searchQuery]);
 
   return (
     <NotesContext.Provider
