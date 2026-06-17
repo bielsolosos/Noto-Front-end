@@ -13,7 +13,7 @@ const md: MarkdownIt = new MarkdownIt({
           hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
           "</code></pre>"
         );
-      } catch (__) {}
+      } catch {}
     }
 
     return (
@@ -25,86 +25,86 @@ const md: MarkdownIt = new MarkdownIt({
 });
 
 // Custom Renderer para adicionar classes customizadas aos tokens principais
-md.renderer.rules.heading_open = function (tokens, idx, options, env, self) {
+md.renderer.rules.heading_open = function (tokens, idx, options, _env, self) {
   const token = tokens[idx];
   const level = token.tag.slice(1);
   token.attrJoin("class", `markdown-h${level}`);
   return self.renderToken(tokens, idx, options);
 };
 
-md.renderer.rules.paragraph_open = function (tokens, idx, options, env, self) {
+md.renderer.rules.paragraph_open = function (tokens, idx, options, _env, self) {
   tokens[idx].attrJoin("class", "markdown-paragraph");
   return self.renderToken(tokens, idx, options);
 };
 
-md.renderer.rules.link_open = function (tokens, idx, options, env, self) {
+md.renderer.rules.link_open = function (tokens, idx, options, _env, self) {
   tokens[idx].attrJoin("class", "markdown-link");
   tokens[idx].attrJoin("target", "_blank");
   tokens[idx].attrJoin("rel", "noopener noreferrer");
   return self.renderToken(tokens, idx, options);
 };
 
-md.renderer.rules.blockquote_open = function (tokens, idx, options, env, self) {
+md.renderer.rules.blockquote_open = function (tokens, idx, options, _env, self) {
   tokens[idx].attrJoin("class", "markdown-blockquote");
   return self.renderToken(tokens, idx, options);
 };
 
-md.renderer.rules.bullet_list_open = function (tokens, idx, options, env, self) {
+md.renderer.rules.bullet_list_open = function (tokens, idx, options, _env, self) {
   tokens[idx].attrJoin("class", "markdown-ul");
   return self.renderToken(tokens, idx, options);
 };
 
-md.renderer.rules.ordered_list_open = function (tokens, idx, options, env, self) {
+md.renderer.rules.ordered_list_open = function (tokens, idx, options, _env, self) {
   tokens[idx].attrJoin("class", "markdown-ol");
   return self.renderToken(tokens, idx, options);
 };
 
-md.renderer.rules.list_item_open = function (tokens, idx, options, env, self) {
+md.renderer.rules.list_item_open = function (tokens, idx, options, _env, self) {
   tokens[idx].attrJoin("class", "markdown-li");
   return self.renderToken(tokens, idx, options);
 };
 
-md.renderer.rules.table_open = function (tokens, idx, options, env, self) {
+md.renderer.rules.table_open = function (tokens, idx, options, _env, self) {
   tokens[idx].attrJoin("class", "markdown-table");
   return self.renderToken(tokens, idx, options);
 };
 
-md.renderer.rules.th_open = function (tokens, idx, options, env, self) {
+md.renderer.rules.th_open = function (tokens, idx, options, _env, self) {
   tokens[idx].attrJoin("class", "markdown-td");
   return self.renderToken(tokens, idx, options);
 };
 
-md.renderer.rules.td_open = function (tokens, idx, options, env, self) {
+md.renderer.rules.td_open = function (tokens, idx, options, _env, self) {
   tokens[idx].attrJoin("class", "markdown-td");
   return self.renderToken(tokens, idx, options);
 };
 
-md.renderer.rules.hr = function (tokens, idx, options, env, self) {
+md.renderer.rules.hr = function () {
   return '<hr class="markdown-hr" />\n';
 };
 
-md.renderer.rules.strong_open = function (tokens, idx, options, env, self) {
+md.renderer.rules.strong_open = function (tokens, idx, options, _env, self) {
   tokens[idx].attrJoin("class", "markdown-strong");
   return self.renderToken(tokens, idx, options);
 };
 
-md.renderer.rules.em_open = function (tokens, idx, options, env, self) {
+md.renderer.rules.em_open = function (tokens, idx, options, _env, self) {
   tokens[idx].attrJoin("class", "markdown-em");
   return self.renderToken(tokens, idx, options);
 };
 
-md.renderer.rules.s_open = function (tokens, idx, options, env, self) {
+md.renderer.rules.s_open = function (tokens, idx, options, _env, self) {
   tokens[idx].attrJoin("class", "markdown-del");
   return self.renderToken(tokens, idx, options);
 };
 
-md.renderer.rules.code_inline = function (tokens, idx, options, env, self) {
+md.renderer.rules.code_inline = function (tokens, idx, _options, _env, _self) {
   const token = tokens[idx];
   return `<code class="markdown-code-inline">${md.utils.escapeHtml(token.content)}</code>`;
 };
 
 // Custom rule for images with modal
-md.renderer.rules.image = function (tokens, idx, options, env, self) {
+md.renderer.rules.image = function (tokens, idx, _options, _env, _self) {
   const token = tokens[idx];
   const srcIndex = token.attrIndex("src");
   const src = srcIndex >= 0 && token.attrs ? token.attrs[srcIndex][1] : "";

@@ -192,9 +192,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
         const firstPageId = response.data[0].id;
         setSelectedPageId(firstPageId);
       }
-    } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.message || "Erro ao carregar páginas";
+    } catch {
       toast.error("Erro ao carregar páginas");
     } finally {
       setIsLoadingList(false);
@@ -209,9 +207,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
         setIsLoadingPage(true);
         const response = await api.get<Page>(`api/pages/${pageId}`);
         setSelectedPage(response.data);
-      } catch (error: any) {
-        const errorMessage =
-          error.response?.data?.message || "Erro ao carregar página";
+      } catch {
         toast.error("Erro ao carregar página");
         // Se der erro, limpar seleção
         setSelectedPage(null);
@@ -250,9 +246,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       setSelectedPageIdWithUrl(newPage.id);
 
       toast.success("Página criada com sucesso");
-    } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.message || "Erro ao criar página";
+    } catch {
       toast.error("Erro ao criar página");
     } finally {
       setIsCreating(false);
@@ -273,7 +267,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       await refreshPageList();
 
       toast.success("Página deletada com sucesso");
-    } catch (error) {
+    } catch {
       toast.error("Erro ao deletar página");
     }
   };
@@ -342,7 +336,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       });
       setHasUnsavedChanges(false);
       setIsEditing(false);
-    } catch (error) {
+    } catch {
       // Error já tratado no updatePageApi
     } finally {
       setIsSaving(false);
@@ -365,7 +359,7 @@ export function NotesProvider({ children }: { children: ReactNode }) {
         true // silent parameter
       );
       setHasUnsavedChanges(false);
-    } catch (error) {
+    } catch {
       // Error já tratado no updatePageApi
     } finally {
       setIsSaving(false);

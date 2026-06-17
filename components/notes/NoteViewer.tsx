@@ -10,10 +10,11 @@ export function NoteViewer() {
   const { selectedPage, isLoadingPage } = useNotes();
 
   const sanitizedContent = useMemo(() => {
-    if (!selectedPage?.content) {
+    const content = selectedPage?.content;
+    if (!content) {
       return "<p class='text-muted-foreground italic'>Esta entrada está vazia. Clique em 'Editar' para começar a escrever.</p>";
     }
-    const parsed = parseMarkdown(selectedPage.content);
+    const parsed = parseMarkdown(content);
     return DOMPurify.sanitize(parsed);
   }, [selectedPage?.content]);
 

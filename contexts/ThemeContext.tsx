@@ -3,7 +3,7 @@
 import type React from "react";
 
 import { useTheme as useNextTheme } from "next-themes";
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 interface ThemeContextType {
   darkMode: boolean;
@@ -23,13 +23,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const darkMode = isMounted && resolvedTheme === "dark";
 
-  const toggleDarkMode = () => {
+  const toggleDarkMode = useCallback(() => {
     setTheme(darkMode ? "light" : "dark");
-  };
+  }, [darkMode, setTheme]);
 
   const value = useMemo(
     () => ({ darkMode, toggleDarkMode }),
-    [darkMode]
+    [darkMode, toggleDarkMode]
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

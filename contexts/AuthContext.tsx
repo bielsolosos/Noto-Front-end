@@ -1,9 +1,8 @@
 "use client";
 
 import api from "@/lib/api";
-import axios from "axios";
 import { useRouter } from "next/navigation";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 interface User {
   id: string;
@@ -31,6 +30,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
+  const logout = useCallback(() => {
+    setAccessToken(null);
+    setRefreshToken(null);
+    setUser(null);
+    setIsLoading(false);
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    router.replace("/");
+  }, [router]);
+
+  const fetchUser = useCallback(async (token: string) => {
+    try {
+      const response = await api.get("api/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUser(response.data);
+    } catch (error: unknown) {
+      console.error("Erro ao buscar usuário:", error);
+      if (error && typeof error === "object" && "response" in error) {
+        const err = error as { response?: { status?: number } };
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          logout();
+        }
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [logout]);
+
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     const refresh = localStorage.getItem("refreshToken");
@@ -41,7 +69,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } else {
       setIsLoading(false);
     }
-  }, []);
+  }, [fetchUser]);
 
   useEffect(() => {
     if (accessToken && refreshToken) {
@@ -49,23 +77,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       localStorage.setItem("refreshToken", refreshToken);
     }
   }, [accessToken, refreshToken]);
-
-  const fetchUser = async (token: string) => {
-    try {
-      const response = await api.get("api/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setUser(response.data);
-    } catch (error: any) {
-      console.error("Erro ao buscar usuário:", error);
-      // Só faz logout se for erro de autenticação
-      if (error.response?.status === 401 || error.response?.status === 403) {
-        logout();
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const login = async (username: string, password: string) => {
     try {
@@ -75,10 +86,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         password,
       });
 
-      const { token, refreshToken } = response.data;
+      const { token, refreshToken: newRefreshToken } = response.data;
 
       setAccessToken(token);
-      setRefreshToken(refreshToken);
+      setRefreshToken(newRefreshToken);
       await fetchUser(token);
       router.push("/editor");
     } catch (error) {
@@ -93,16 +104,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     await fetchUser(token);
-  };
-
-  const logout = () => {
-    setAccessToken(null);
-    setRefreshToken(null);
-    setUser(null);
-    setIsLoading(false);
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    router.replace("/");
   };
 
   return (

@@ -5,15 +5,6 @@
 
 import { environment } from '@/environments/environment';
 
-// Validação simples para garantir que variáveis críticas existem
-const getEnvVar = (key: string, defaultValue?: string): string => {
-  const value = process.env[key] || defaultValue;
-  if (!value) {
-    throw new Error(`Variável de ambiente ${key} não está definida`);
-  }
-  return value;
-};
-
 export const env = {
   // Exposto ao browser; usar NEXT_PUBLIC_ para estar disponível no cliente
   NEXT_PUBLIC_API_URL: environment.apiUrl,

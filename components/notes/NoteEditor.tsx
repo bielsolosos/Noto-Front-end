@@ -67,18 +67,18 @@ import {
   Quote,
   Save,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState, useMemo } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
 
 // CodeMirror imports
-import { EditorState, Transaction, EditorSelection } from "@codemirror/state";
+import { EditorState, EditorSelection } from "@codemirror/state";
 import { EditorView, keymap, highlightActiveLine, scrollPastEnd } from "@codemirror/view";
-import { defaultKeymap, history, historyKeymap, undo as cmUndo, redo as cmRedo } from "@codemirror/commands";
+import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
 import { markdown, commonmarkLanguage } from "@codemirror/lang-markdown";
 import { languages } from "@codemirror/language-data";
-import { syntaxHighlighting, defaultHighlightStyle, HighlightStyle, syntaxHighlighting as createSyntaxHighlighting } from "@codemirror/language";
+import { HighlightStyle, syntaxHighlighting as createSyntaxHighlighting } from "@codemirror/language";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { tags as t } from "@lezer/highlight";
 
@@ -188,19 +188,6 @@ export function NoteEditor() {
   // Refs para o CodeMirror
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
-
-  // Funções de Undo/Redo usando CodeMirror
-  const undo = useCallback(() => {
-    if (viewRef.current) {
-      cmUndo(viewRef.current);
-    }
-  }, []);
-
-  const redo = useCallback(() => {
-    if (viewRef.current) {
-      cmRedo(viewRef.current);
-    }
-  }, []);
 
   // Função para inserir texto no CodeMirror
   const insertTextAtCursor = (

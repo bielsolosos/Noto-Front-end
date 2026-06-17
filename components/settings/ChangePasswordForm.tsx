@@ -34,7 +34,7 @@ const changePasswordSchema = z
 type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
 
 export function ChangePasswordForm() {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const {
@@ -57,8 +57,8 @@ export function ChangePasswordForm() {
       toast.success("Senha alterada com sucesso!");
       logout();
       reset();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Erro ao alterar senha");
+    } catch (_error: unknown) {
+      toast.error(((_error as { response?: { data?: { message?: string } } })?.response?.data?.message) || "Erro ao alterar senha");
     } finally {
       setLoading(false);
     }

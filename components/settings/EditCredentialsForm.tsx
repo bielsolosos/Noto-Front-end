@@ -44,8 +44,8 @@ export function EditCredentialsForm() {
       
       toast.success("Credenciais atualizadas com sucesso! Por favor, faça login novamente.");
       logout();
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Erro ao atualizar credenciais");
+    } catch (_error: unknown) {
+      toast.error(((_error as { response?: { data?: { message?: string } } })?.response?.data?.message) || "Erro ao atualizar credenciais");
     } finally {
       setLoading(false);
     }
