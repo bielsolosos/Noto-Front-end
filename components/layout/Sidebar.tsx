@@ -19,9 +19,54 @@ import { useSidebar } from "@/contexts/SidebarContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useMobile } from "@/hooks/useMobile";
 import { cn } from "@/lib/utils";
-import { BookOpen, Image as ImageIcon, LogOut, Moon, Plus, Search, Settings, Shield, Sun } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  BookOpen,
+  Image as ImageIcon,
+  LogOut,
+  Moon,
+  Plus,
+  Search,
+  Settings,
+  Shield,
+  Sun,
+} from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+type SortOption = {
+  label: string;
+  sortBy: "UPDATED_AT" | "CREATED_AT" | "TITLE";
+  sortOrder: "DESC" | "ASC";
+};
+
+const sortOptions: SortOption[] = [
+  { label: "Mais recentes", sortBy: "UPDATED_AT", sortOrder: "DESC" },
+  { label: "Mais antigos", sortBy: "UPDATED_AT", sortOrder: "ASC" },
+  { label: "Mais novos", sortBy: "CREATED_AT", sortOrder: "DESC" },
+  { label: "Mais velhos", sortBy: "CREATED_AT", sortOrder: "ASC" },
+  { label: "A-Z", sortBy: "TITLE", sortOrder: "ASC" },
+  { label: "Z-A", sortBy: "TITLE", sortOrder: "DESC" },
+];
+
+function SortIconComponent({
+  sortBy,
+  sortOrder,
+}: {
+  sortBy: "UPDATED_AT" | "CREATED_AT" | "TITLE";
+  sortOrder: "DESC" | "ASC";
+}) {
+  if (sortBy !== "UPDATED_AT") {
+    return <ArrowUpDown className="h-4 w-4" />;
+  }
+  return sortOrder === "DESC" ? (
+    <ArrowDown className="h-4 w-4" />
+  ) : (
+    <ArrowUp className="h-4 w-4" />
+  );
+}
 
 interface SidebarPanelProps {
   isMobileLayout: boolean;
@@ -35,15 +80,30 @@ function SidebarPanel({ isMobileLayout }: SidebarPanelProps) {
     filteredPageSummaries,
     searchQuery,
     setSearchQuery,
+    sortParams,
+    setSortParams,
   } = useNotes();
   const { closeSidebar } = useSidebar();
   const { user, logout } = useAuth();
   const { darkMode, toggleDarkMode } = useTheme();
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(localSearchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [localSearchQuery, setSearchQuery]);
 
   const isAdmin = user?.roles?.includes("ROLE_ADMIN") ?? false;
   const userInitial = useMemo(
     () => user?.username?.charAt(0).toUpperCase() || "U",
     [user?.username]
+  );
+
+  const currentSort = sortOptions.find(
+    (opt) => opt.sortBy === sortParams.sortBy && opt.sortOrder === sortParams.sortOrder
   );
 
   const closeAfterAction = () => {
@@ -54,6 +114,12 @@ function SidebarPanel({ isMobileLayout }: SidebarPanelProps) {
 
   const handleCreateNew = async () => {
     await createNewPage();
+    closeAfterAction();
+  };
+
+  const handleSortChange = (option: SortOption) => {
+    setSortParams({ sortBy: option.sortBy, sortOrder: option.sortOrder });
+    setIsSortOpen(false);
     closeAfterAction();
   };
 
@@ -76,22 +142,47 @@ function SidebarPanel({ isMobileLayout }: SidebarPanelProps) {
             <span className="font-semibold tracking-tight">Noto</span>
           </div>
 
-          <Button
-            onClick={handleCreateNew}
-            size="sm"
-            className="px-3"
-            disabled={isCreating}
-          >
-            <Plus className="mr-1 h-4 w-4" />
-            {isCreating ? "Criando..." : "Novo"}
-          </Button>
+          <div className="flex items-center gap-1">
+            <DropdownMenu open={isSortOpen} onOpenChange={setIsSortOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="px-2 py-1" aria-label="Ordenar páginas">
+                  <SortIconComponent sortBy={sortParams.sortBy} sortOrder={sortParams.sortOrder} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {sortOptions.map((option) => (
+                  <DropdownMenuItem
+                    key={`${option.sortBy}-${option.sortOrder}`}
+                    onClick={() => handleSortChange(option)}
+                    className={
+                      currentSort?.sortBy === option.sortBy &&
+                      currentSort?.sortOrder === option.sortOrder
+                        ? "bg-accent"
+                        : ""
+                    }
+                  >
+                    {option.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+              onClick={handleCreateNew}
+              size="sm"
+              className="px-3"
+              disabled={isCreating}
+            >
+              <Plus className="mr-1 h-4 w-4" />
+              {isCreating ? "Criando..." : "Novo"}
+            </Button>
+          </div>
         </div>
 
         <div className="relative mt-3">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
+            value={localSearchQuery}
+            onChange={(event) => setLocalSearchQuery(event.target.value)}
             placeholder="Buscar por titulo, data ou hora"
             className="h-9 pl-8"
           />
