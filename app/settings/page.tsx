@@ -42,6 +42,30 @@ export default function SettingsPage() {
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 
+  const clearCropImage = useCallback(() => {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+    setImageToCropUrl(null);
+  }, []);
+
+  const resetCropDialogState = useCallback(() => {
+    setIsCropDialogOpen(false);
+    setImageToCropFileName("avatar.jpg");
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCroppedAreaPixels(null);
+    clearCropImage();
+  }, [clearCropImage]);
+
+  const handleCropComplete = useCallback(
+    (_area: Area, areaPixels: Area) => {
+      setCroppedAreaPixels(areaPixels);
+    },
+    []
+  );
+
   useEffect(() => {
     if (!isLoading && !user) {
       router.replace("/");
@@ -59,31 +83,6 @@ export default function SettingsPage() {
   if (isLoading || !user) {
     return null;
   }
-
-  const clearCropImage = () => {
-    if (objectUrlRef.current) {
-      URL.revokeObjectURL(objectUrlRef.current);
-      objectUrlRef.current = null;
-    }
-
-    setImageToCropUrl(null);
-  };
-
-  const resetCropDialogState = () => {
-    setIsCropDialogOpen(false);
-    setImageToCropFileName("avatar.jpg");
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setCroppedAreaPixels(null);
-    clearCropImage();
-  };
-
-  const handleCropComplete = useCallback(
-    (_area: Area, areaPixels: Area) => {
-      setCroppedAreaPixels(areaPixels);
-    },
-    []
-  );
 
   const handleProfileImageChange = async (
     event: React.ChangeEvent<HTMLInputElement>
