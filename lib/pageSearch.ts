@@ -1,52 +1,22 @@
-import type { PageSummaryDto } from "@/types/page";
-
-function normalizeSearchValue(value: string): string {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[,:]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+export interface PageSortParams {
+  sortBy: "UPDATED_AT" | "CREATED_AT" | "TITLE";
+  sortOrder: "DESC" | "ASC";
 }
 
-function buildPageSearchIndex(page: PageSummaryDto): string {
-  const updatedAt = new Date(page.updatedAt);
-  const date = updatedAt.toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-  const time = updatedAt.toLocaleTimeString("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+export function buildPageListSearchParams(
+  query: string,
+  sortParams?: PageSortParams
+): string {
+  const params = new URLSearchParams();
 
-  return normalizeSearchValue(`${page.title} ${date} ${time}`);
-}
-
-export function filterPageSummariesByQuery(
-  pages: PageSummaryDto[],
-  query: string
-): PageSummaryDto[] {
-  const normalizedQuery = normalizeSearchValue(query);
-
-  if (!normalizedQuery) {
-    return pages;
+  if (query.trim()) {
+    params.append("q", query.trim());
   }
 
-  return pages.filter((page) =>
-    buildPageSearchIndex(page).includes(normalizedQuery)
-  );
-}
-
-export function buildPageListSearchParams(query: string): string {
-  const trimmedQuery = query.trim();
-
-  if (!trimmedQuery) {
-    return "";
+  if (sortParams) {
+    params.append("sortBy", sortParams.sortBy);
+    params.append("sortOrder", sortParams.sortOrder);
   }
 
-  const params = new URLSearchParams({ q: trimmedQuery });
   return params.toString();
 }

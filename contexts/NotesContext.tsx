@@ -3,7 +3,7 @@
 import api from "@/lib/api";
 import {
   buildPageListSearchParams,
-  filterPageSummariesByQuery,
+  type PageSortParams,
 } from "@/lib/pageSearch";
 import type { Page, PageSummaryDto } from "@/types/page";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -11,7 +11,6 @@ import {
   createContext,
   useContext,
   useEffect,
-  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -19,8 +18,7 @@ import {
 import { toast } from "sonner";
 
 interface RefreshPageListOptions {
-  query?: string;
-  useBackendSearch?: boolean;
+  sortParams?: PageSortParams;
 }
 
 interface NotesContextType {
@@ -29,6 +27,8 @@ interface NotesContextType {
   filteredPageSummaries: PageSummaryDto[];
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  sortParams: PageSortParams;
+  setSortParams: (params: PageSortParams) => void;
   // Página completa selecionada
   selectedPage: Page | null;
   selectedPageId: string | null;
@@ -70,6 +70,10 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   const [isLoadingPage, setIsLoadingPage] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortParams, setSortParams] = useState<PageSortParams>({
+    sortBy: "UPDATED_AT",
+    sortOrder: "DESC",
+  });
 
   const pathname = usePathname();
   const router = useRouter();
@@ -82,10 +86,29 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const filteredPageSummaries = useMemo(
-    () => filterPageSummariesByQuery(pageSummaries, searchQuery),
-    [pageSummaries, searchQuery]
-  );
+  const filteredPageSummaries = pageSummaries;
+
+  // Função para atualizar a URL com filtros (q, sortBy, sortOrder)
+  const updateUrlWithFilters = (q: string, newSortParams: PageSortParams) => {
+    const nextSearchParams = new URLSearchParams(searchParams.toString());
+
+    if (q) {
+      nextSearchParams.set("q", q);
+    } else {
+      nextSearchParams.delete("q");
+    }
+
+    if (newSortParams.sortBy !== "UPDATED_AT" || newSortParams.sortOrder !== "DESC") {
+      nextSearchParams.set("sortBy", newSortParams.sortBy);
+      nextSearchParams.set("sortOrder", newSortParams.sortOrder);
+    } else {
+      nextSearchParams.delete("sortBy");
+      nextSearchParams.delete("sortOrder");
+    }
+
+    const nextSearch = nextSearchParams.toString();
+    router.replace(nextSearch ? `${pathname}?${nextSearch}` : pathname);
+  };
 
   // Função para atualizar a URL com o pageId
   const updateUrlWithPageId = (pageId: string | null) => {
@@ -97,9 +120,20 @@ export function NotesProvider({ children }: { children: ReactNode }) {
       nextSearchParams.delete("pageId");
     }
 
-    // Usar replace para não adicionar ao histórico
     const nextSearch = nextSearchParams.toString();
     router.replace(nextSearch ? `${pathname}?${nextSearch}` : pathname);
+  };
+
+  // Função para atualizar searchQuery e URL
+  const handleSetSearchQuery = (q: string) => {
+    setSearchQuery(q);
+    updateUrlWithFilters(q, sortParams);
+  };
+
+  // Função para atualizar sortParams e URL
+  const handleSetSortParams = (newSortParams: PageSortParams) => {
+    setSortParams(newSortParams);
+    updateUrlWithFilters(searchQuery, newSortParams);
   };
 
   // Função personalizada para setSelectedPageId que também atualiza a URL
@@ -147,14 +181,9 @@ export function NotesProvider({ children }: { children: ReactNode }) {
   const refreshPageList = async (options: RefreshPageListOptions = {}) => {
     try {
       setIsLoadingList(true);
-      const shouldUseBackendSearch =
-        Boolean(options.useBackendSearch) && Boolean(options.query?.trim());
-      const listSearchParams = shouldUseBackendSearch
-        ? buildPageListSearchParams(options.query || "")
-        : "";
-      const endpoint = listSearchParams
-        ? `api/pages/list?${listSearchParams}`
-        : "api/pages/list";
+      const effectiveSortParams = options.sortParams || sortParams;
+      const listSearchParams = buildPageListSearchParams(searchQuery, effectiveSortParams);
+      const endpoint = `api/pages/list${listSearchParams ? `?${listSearchParams}` : ""}`;
 
       const response = await api.get<PageSummaryDto[]>(endpoint);
       setPageSummaries(response.data);
@@ -364,10 +393,42 @@ export function NotesProvider({ children }: { children: ReactNode }) {
     setHasUnsavedChanges(true);
   };
 
-  // Carregar lista inicial
+  // Inicializar estado a partir da URL e carregar lista
+  useEffect(() => {
+    const qParam = searchParams.get("q");
+    const sortByParam = searchParams.get("sortBy") as "UPDATED_AT" | "CREATED_AT" | "TITLE" | null;
+    const sortOrderParam = searchParams.get("sortOrder") as "DESC" | "ASC" | null;
+
+    let hasChanges = false;
+
+    if (qParam && qParam !== searchQuery) {
+      setSearchQuery(qParam);
+      hasChanges = true;
+    }
+
+    if (sortByParam && sortOrderParam) {
+      const urlSortParams = { sortBy: sortByParam, sortOrder: sortOrderParam };
+      if (urlSortParams.sortBy !== sortParams.sortBy || urlSortParams.sortOrder !== sortParams.sortOrder) {
+        setSortParams(urlSortParams);
+        hasChanges = true;
+      }
+    }
+
+    if (!hasChanges) {
+      refreshPageList();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Re-buscar lista quando sortParams mudar
   useEffect(() => {
     refreshPageList();
-  }, []);
+  }, [sortParams]);
+
+  // Re-buscar lista quando searchQuery mudar
+  useEffect(() => {
+    refreshPageList();
+  }, [searchQuery]);
 
   return (
     <NotesContext.Provider
@@ -375,7 +436,9 @@ export function NotesProvider({ children }: { children: ReactNode }) {
         pageSummaries,
         filteredPageSummaries,
         searchQuery,
-        setSearchQuery,
+        setSearchQuery: handleSetSearchQuery,
+        sortParams,
+        setSortParams: handleSetSortParams,
         selectedPage,
         selectedPageId,
         isLoadingList,
