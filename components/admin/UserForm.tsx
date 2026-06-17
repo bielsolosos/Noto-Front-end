@@ -43,8 +43,8 @@ export function UserForm({ onSuccess }: UserFormProps) {
       await api.post("api/users/register", formData);
       onSuccess();
       setFormData({ username: "", email: "", password: "", confirmPassword: "" });
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Erro ao criar usuário");
+    } catch (_error: unknown) {
+      toast.error(((_error as { response?: { data?: { message?: string } } })?.response?.data?.message) || "Erro ao criar usuário");
     } finally {
       setLoading(false);
     }

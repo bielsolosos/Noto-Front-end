@@ -135,9 +135,9 @@ export default function SettingsPage() {
       setZoom(1);
       setCroppedAreaPixels(null);
       setIsCropDialogOpen(true);
-    } catch (error: any) {
+    } catch (_error: unknown) {
       toast.error(
-        error?.response?.data?.message ||
+        ((_error as { response?: { data?: { message?: string } } })?.response?.data?.message) ||
           "Não foi possível processar a imagem selecionada."
       );
     } finally {
@@ -167,9 +167,9 @@ export default function SettingsPage() {
       await refreshUser();
       toast.success("Foto de perfil atualizada com sucesso.");
       resetCropDialogState();
-    } catch (error: any) {
+    } catch (_error: unknown) {
       toast.error(
-        error?.response?.data?.message || "Erro ao atualizar foto de perfil"
+        ((_error as { response?: { data?: { message?: string } } })?.response?.data?.message) || "Erro ao atualizar foto de perfil"
       );
     } finally {
       setIsUploadingProfileImage(false);

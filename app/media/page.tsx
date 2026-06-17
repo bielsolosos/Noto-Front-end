@@ -33,7 +33,7 @@ export default function MediaPage() {
       setLoading(true);
       const data = await getMedia(page, 20, filter);
       setMediaPage(data);
-    } catch (error) {
+    } catch {
       toast.error("Erro ao carregar a galeria de imagens.");
     } finally {
       setLoading(false);
@@ -66,8 +66,8 @@ export default function MediaPage() {
       toast.success("Imagem enviada com sucesso!");
       fetchMedia(0, search);
       setCurrentPage(0);
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Erro ao enviar a imagem.");
+    } catch {
+      toast.error("Erro ao enviar a imagem.");
     } finally {
       setIsUploading(false);
       e.target.value = "";
@@ -81,7 +81,7 @@ export default function MediaPage() {
       await deleteMedia(id);
       toast.success("Imagem apagada com sucesso!");
       fetchMedia(currentPage, search);
-    } catch (error) {
+    } catch {
       toast.error("Erro ao apagar a imagem.");
     }
   };

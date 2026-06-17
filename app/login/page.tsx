@@ -34,7 +34,7 @@ function LoginContent() {
   async function onSubmit(data: LoginFormData) {
     try {
       await login(data.username, data.password);
-    } catch (error) {
+    } catch {
       toast.error("Erro ao fazer login");
     }
   }

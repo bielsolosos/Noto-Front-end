@@ -54,7 +54,7 @@ export function UserManagement() {
       setLoading(true);
       const response = await api.get("api/admin/users/list");
       setUsers(response.data);
-    } catch (error: any) {
+    } catch {
       toast.error("Erro ao carregar usuários");
     } finally {
       setLoading(false);
@@ -70,7 +70,7 @@ export function UserManagement() {
       await api.delete(`api/admin/users/${userId}`);
       toast.success("Usuário deletado com sucesso");
       fetchUsers();
-    } catch (error: any) {
+    } catch {
       toast.error("Erro ao deletar usuário");
     }
   };
@@ -85,7 +85,7 @@ export function UserManagement() {
       await api.patch(`api/admin/users/${userId}/toggle-active`);
       toast.success("Usuário desativado/ativado com sucesso");
       fetchUsers();
-    } catch (error: any) {
+    } catch {
       toast.error("Erro ao alterar permissões do usuário");
     }
   };

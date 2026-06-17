@@ -1,4 +1,5 @@
 /** @type {import('tailwindcss').Config} */
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const plugin = require("tailwindcss/plugin");
 
 module.exports = {
@@ -81,6 +82,7 @@ module.exports = {
     },
   },
   plugins: [
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     require("tailwindcss-animate"),
     plugin(function ({ addBase, theme }) {
       addBase({
